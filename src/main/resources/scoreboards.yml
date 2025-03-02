@@ -1,0 +1,33 @@
+lobby:
+  Title: "&b&lCastle Siege"
+  lines:
+    - "&eTotal online players: online"
+    - "&aCoins: coins"
+    - "&cKills: kills"
+    - "&6Server IP: server-ip"
+
+pre-game:
+  Title: "&b&lCastle Siege"
+  lines:
+    - "&ePlayers in Arena: players in arena"
+    - "&dArena Number: arena number"
+    - "&aKit: kit"
+    - "&bTeam: team"
+    - "&6Server IP: server-ip"
+
+in-game:
+  Title: "&b&lCastle Siege"
+  lines:
+    - "&eTime Remaining: time"
+    - "&cKing's Health: %castlesiege_king%"
+    - "&aDefenders: defenders"
+    - "&bAttackers: attackers"
+    - "&6Server IP: server-ip"
+
+end:
+  Title: "&b&lCastle Siege"
+  lines:
+    - "&aWinners: winners"
+    - "&6Server IP: server-ip"
+
+server-ip: "play.example.com"

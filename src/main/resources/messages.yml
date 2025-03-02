@@ -1,0 +1,5 @@
+join-server-msg:
+- "&eWelcome %player_name% to the &bCastle Siege"
+- "&eEnjoy your stay!"
+no-perm-msg:
+  - "&cYou don't have permission for this command!"

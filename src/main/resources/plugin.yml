@@ -1,0 +1,13 @@
+name: CastleSiege2
+version: '${project.version}'
+main: me.cbhud.castlesiege.CastleSiege
+api-version: '1.17'
+softdepend:
+  - PlaceholderAPI
+commands:
+  setlobby:
+    description: Set the lobby location.
+    permission: cs.admin
+  join:
+    description: Set the lobby location.
+    permission: cs.admin

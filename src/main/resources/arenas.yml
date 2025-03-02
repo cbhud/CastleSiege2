@@ -1,0 +1,18 @@
+arenas:
+  arena1:
+    lobby-spawn: world,0,64,0
+    king-spawn: world2,0,64,0
+    defenders-spawn: world2,12,64,15
+    attackers-spawn: world2,12,64,15
+    auto-start: 15
+    game-timer: 120
+    min-players: 1
+    max-players: 8
+  arena2:
+    lobby-spawn: world,0,64,0
+    king-spawn: world2,0,64,0
+    defenders-spawn: world2,12,64,15
+    attackers-spawn: world2,12,64,15
+    auto-start: 60
+    min-players: 2
+    max-players: 8

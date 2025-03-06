@@ -127,8 +127,6 @@ public class ScoreboardManager {
                 : text;
     }
 
-    private String getCurrentGameState() { return "lobby"; }
-
     public void removeScoreboard(Player player) {
         FastBoard board = scoreboards.remove(player);
         if (board != null) {

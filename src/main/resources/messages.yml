@@ -1,5 +1,19 @@
 join-server-msg:
-- "&eWelcome %player_name% to the &bCastle Siege"
-- "&eEnjoy your stay!"
+  - "&eWelcome %player_name% to the &bCastle Siege"
+  - "&eEnjoy your stay!"
 no-perm-msg:
   - "&cYou don't have permission for this command!"
+attackers-win-msg:
+  - "&cAttackers won!"
+defenders-win-msg:
+  - "&bDefenders won!"
+game-start-msg:
+  - "&7&m--------------------------"
+  - "&b{defenders} &fmust defend the King."
+  - "&b{defenders} &fwin when countdown is over."
+  - ""
+  - "&c{attackers} &fmust kill the King."
+  - "&c{attackers} &flose when countdown is over."
+  - ""
+  - "&aThe game has started!"
+  - "&7&m--------------------------"

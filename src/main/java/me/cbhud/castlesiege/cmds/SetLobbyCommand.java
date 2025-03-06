@@ -19,6 +19,7 @@ public class SetLobbyCommand implements CommandExecutor {
     private final CastleSiege plugin;
     private File lobbyFile;
     private FileConfiguration lobbyConfig;
+    private Location lobbySpawn;
 
     public SetLobbyCommand(CastleSiege plugin) {
         this.plugin = plugin;
@@ -35,6 +36,7 @@ public class SetLobbyCommand implements CommandExecutor {
             }
         }
         lobbyConfig = YamlConfiguration.loadConfiguration(lobbyFile);
+        lobbySpawn = getLobby();
     }
 
     private void saveLobbyFile() {
@@ -53,6 +55,7 @@ public class SetLobbyCommand implements CommandExecutor {
         lobbyConfig.set("lobby.yaw", loc.getYaw());
         lobbyConfig.set("lobby.pitch", loc.getPitch());
         saveLobbyFile();
+        lobbySpawn = loc;
     }
 
     public Location getLobby() {
@@ -88,8 +91,13 @@ public class SetLobbyCommand implements CommandExecutor {
             player.sendMessage("§aLobby location set!");
             return true;
         }
-
-
         return false;
     }
+
+    public Location getLobbySpawn() {
+        return lobbySpawn;
+    }
+
+
 }
+

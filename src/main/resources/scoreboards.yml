@@ -1,33 +1,39 @@
 lobby:
-  Title: "&b&lCastle Siege"
+  Title: "<#084CFB>C<#2468FB>a<#3F84FC>s<#5BA0FC>t<#76BBFC>l<#92D7FD>e <#ADF3FD>S<#ADF3FD>i<#ADF3FD>e<#ADF3FD>g<#ADF3FD>e"
   lines:
-    - "&eTotal online players: online"
-    - "&aCoins: coins"
-    - "&cKills: kills"
-    - "&6Server IP: server-ip"
+    - ""
+    - "&eOnline: %server_online%"
+    - "&aCoins: %cs_coins%"
+    - "&cKills: %cs_kills%"
+    - ""
+    - "&6IP: castlesiege.me"
 
 pre-game:
-  Title: "&b&lCastle Siege"
+  Title: "<#084CFB>C<#2468FB>a<#3F84FC>s<#5BA0FC>t<#76BBFC>l<#92D7FD>e <#ADF3FD>S<#ADF3FD>i<#ADF3FD>e<#ADF3FD>g<#ADF3FD>e"
   lines:
-    - "&ePlayers in Arena: players in arena"
-    - "&dArena Number: arena number"
-    - "&aKit: kit"
-    - "&bTeam: team"
-    - "&6Server IP: server-ip"
+    - ""
+    - "&dArena: %cs_arena%"
+    - "&ePlayers: %cs_arenasize%"
+    - "&aKit: %cs_kit%"
+    - "&bTeam: %cs_team%"
+    - ""
+    - "&6IP: castlesiege.me"
 
 in-game:
-  Title: "&b&lCastle Siege"
+  Title: "<#084CFB>C<#2468FB>a<#3F84FC>s<#5BA0FC>t<#76BBFC>l<#92D7FD>e <#ADF3FD>S<#ADF3FD>i<#ADF3FD>e<#ADF3FD>g<#ADF3FD>e"
   lines:
-    - "&eTime Remaining: time"
-    - "&cKing's Health: %castlesiege_king%"
-    - "&aDefenders: defenders"
-    - "&bAttackers: attackers"
-    - "&6Server IP: server-ip"
+    - ""
+    - "&eTime Remaining: %cs_timer%"
+    - "&cKing's Health: %cs_king%"
+    - "&aDefenders: %cs_defenders_size%"
+    - "&bAttackers: %cs_attackers_size%"
+    - ""
+    - "&6IP: castlesiege.me"
 
 end:
-  Title: "&b&lCastle Siege"
+  Title: "<#084CFB>C<#2468FB>a<#3F84FC>s<#5BA0FC>t<#76BBFC>l<#92D7FD>e <#ADF3FD>S<#ADF3FD>i<#ADF3FD>e<#ADF3FD>g<#ADF3FD>e"
   lines:
-    - "&aWinners: winners"
-    - "&6Server IP: server-ip"
-
-server-ip: "play.example.com"
+    - ""
+    - "&aWinners: %cs_winner%"
+    - ""
+    - "&6IP: castlesiege.me"

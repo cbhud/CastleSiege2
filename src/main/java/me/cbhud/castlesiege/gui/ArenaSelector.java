@@ -6,7 +6,9 @@ import dev.triumphteam.gui.guis.GuiItem;
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.arena.Arena;
 import me.cbhud.castlesiege.arena.ArenaManager;
+import me.cbhud.castlesiege.arena.ArenaState;
 import net.kyori.adventure.text.Component;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -21,35 +23,61 @@ public class ArenaSelector {
 
     public ArenaSelector(CastleSiege plugin) {
         this.plugin = plugin;
-        this.arenaManager = plugin.getArenaManager();  // Assuming you have this in your CastleSiege plugin
+        this.arenaManager = plugin.getArenaManager();
         gui = Gui.gui()
                 .title(Component.text("§eSelect Arena"))
-                .rows(6)  // Adjust the rows depending on how many arenas you have
+                .rows(4)
                 .create();
-
-        init();
     }
 
+    // Removed synchronization
     private void init() {
-        int slot = 0;  // To keep track of where to place the items in the GUI
+        int slot = 0;
         for (Arena arena : arenaManager.getArenas()) {
-            // Get arena status (assuming `isActive()` returns if the arena is available for play)
-            String status = arena.getState().toString();
+            ArenaState state = arena.getState();
+            Material woolMaterial;
+            ChatColor statusColor;
+            String status;
 
-            // Build an item for each arena
-            GuiItem arenaItem = ItemBuilder.from(Material.GREEN_WOOL)  // You can change the material to fit your theme
-                    .name(Component.text("§r" + arena.getId()))  // Arena name
+            switch (state) {
+                case IN_GAME:
+                    woolMaterial = Material.GREEN_WOOL;
+                    statusColor = ChatColor.GREEN;
+                    status = "§aIn Game";
+                    break;
+                case WAITING:
+                    woolMaterial = Material.LIME_WOOL;
+                    statusColor = ChatColor.YELLOW;
+                    status = "§eWaiting for players...";
+                    break;
+                case ENDED:
+                    woolMaterial = Material.RED_WOOL;
+                    statusColor = ChatColor.DARK_RED;
+                    status = "§4Restarting...";
+                    break;
+                default:
+                    woolMaterial = Material.WHITE_WOOL;
+                    statusColor = ChatColor.GRAY;
+                    status = "§7Unknown";
+                    break;
+            }
+
+            GuiItem arenaItem = ItemBuilder.from(woolMaterial)
+                    .name(Component.text(statusColor + arena.getId()))
                     .lore(
-                            Component.text("§BStatus: " + "§e" +status),  // Arena status
+                            Component.text(""),
+                            Component.text("§bPlayers: §e" + arena.getNoPlayers()),
+                            Component.text("§bStatus: " + status),
+                            Component.text(""),
                             Component.text("§7Click to join!")
                     )
                     .asGuiItem(event -> handleArenaSelection(event, arena));
 
-            // Place the item in the GUI
             gui.setItem(slot++, arenaItem);
         }
     }
 
+    // Removed synchronization here as well
     private void handleArenaSelection(InventoryClickEvent event, Arena arena) {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
@@ -57,9 +85,10 @@ public class ArenaSelector {
 
         event.setCancelled(true);
 
-        // If arena is active, teleport the player to the arena
         if (arena.getState() == WAITING) {
-            arena.addPlayer(player);
+            plugin.getArenaManager().addPlayerToArena(player, arena);
+            player.teleport(arena.getLobbySpawn());
+            plugin.getPlayerManager().setPlayerAsWaiting(player);
             player.sendMessage("§aYou have joined the arena: " + arena.getId());
         } else {
             player.sendMessage("§cThis arena is currently not available.");
@@ -68,7 +97,11 @@ public class ArenaSelector {
         gui.close(player);
     }
 
+    // Open GUI with sync task
     public void open(Player player) {
-        gui.open(player);
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            init();
+            gui.open(player);
+        });
     }
 }

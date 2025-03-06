@@ -3,22 +3,18 @@ package me.cbhud.castlesiege.arena;
 import me.cbhud.castlesiege.CastleSiege;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ArenaManager {
     private final Map<String, Arena> arenas = new HashMap<>();
+    private final Map<UUID, Arena> playerArenaMap = new HashMap<>();
     private final CastleSiege plugin;
     private final File configFile;
     private final FileConfiguration config;
@@ -66,21 +62,26 @@ public class ArenaManager {
         return new Location(Bukkit.getWorld(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
     }
 
-    public Arena getArena(String id) {
-        return arenas.get(id);
-    }
-
     public Set<Arena> getArenas() {
         return new HashSet<>(arenas.values());
     }
 
-    public Arena getArenaByPlayer(Player player) {
-        for (Arena arena : arenas.values()) {
-            if (arena.getPlayers().contains(player)) {
-                return arena;
-            }
-        }
-        return null;
+    public Arena getArenaByPlayer(UUID playerId) {
+        return playerArenaMap.get(playerId);
     }
 
+    public void addPlayerToArena(Player player, Arena arena) {
+        UUID playerId = player.getUniqueId();
+        playerArenaMap.put(playerId, arena);
+        arena.addPlayer(player);
+    }
+
+    public void removePlayerFromArena(Player player) {
+        UUID playerId = player.getUniqueId();
+        Arena arena = getArenaByPlayer(playerId);
+        if (arena != null) {
+            arena.removePlayer(player);
+            playerArenaMap.remove(playerId);
+        }
+    }
 }

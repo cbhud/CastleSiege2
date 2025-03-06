@@ -30,30 +30,8 @@ public class JoinArenaCommand implements CommandExecutor {
             return true;
         }
 
-        String arenaId = args[0];
-        Arena arena = plugin.getArenaManager().getArena(arenaId);
+        plugin.getTeamSelector().open(player);
 
-        if (arena == null) {
-            player.sendMessage(ChatColor.RED + "Arena not found!");
-            return true;
-        }
-
-        if (arena.getState() != ArenaState.WAITING) {
-            player.sendMessage(ChatColor.RED + "This arena is not available right now!");
-            return true;
-        }
-
-        if (arena.getPlayers().size() >= arena.getMax()) {
-            player.sendMessage(ChatColor.RED + "This arena is full!");
-            return true;
-        }
-
-        if (arena.addPlayer(player)) {
-            player.sendMessage(ChatColor.GREEN + "You have joined arena " + arenaId + "!");
-            player.teleport(arena.getLobbySpawn()); // Teleport to the lobby spawn
-        } else {
-            player.sendMessage(ChatColor.RED + "Could not join the arena!");
-        }
 
         return true;
     }

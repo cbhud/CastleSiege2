@@ -3,7 +3,9 @@ package me.cbhud.castlesiege.utils;
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.arena.Arena;
 import me.cbhud.castlesiege.team.Team;
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -49,10 +51,9 @@ public class MobManager implements Listener {
         kingZombie.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
     }
 
-
     public double getZombieHealth(Zombie zombie) {
         if (isKingZombie(zombie)) {
-            return zombie.getHealth();
+            return Math.round(zombie.getHealth());
         }
         return 0.0;
     }
@@ -101,7 +102,7 @@ public class MobManager implements Listener {
 
         if (event.getDamager() instanceof Player && event.getEntity() instanceof Zombie) {
             Player damager = (Player) event.getDamager();
-            Team damagerTeam = plugin.getTeamManager().getTeam(damager);
+            Team damagerTeam = plugin.getArenaManager().getArenaByPlayer(damager.getUniqueId()).getTeam(damager);
 
             // Cancel event only if the damager is a Defender and the damaged entity is a Zombie
             if (damagerTeam == Team.Defenders) {
@@ -112,7 +113,7 @@ public class MobManager implements Listener {
 
             if (projectile.getShooter() instanceof Player) {
                 Player shooter = (Player) projectile.getShooter();
-                Team shooterTeam = plugin.getTeamManager().getTeam(shooter);
+                Team shooterTeam = plugin.getArenaManager().getArenaByPlayer(shooter.getUniqueId()).getTeam(shooter);
 
                 // Cancel event only if the shooter is a Defender and the damaged entity is a Zombie
                 if (shooterTeam == Team.Defenders && event.getEntity() instanceof Zombie) {
@@ -128,9 +129,8 @@ public class MobManager implements Listener {
         if (event.getEntity().getCustomName() != null && event.getEntity().getCustomName().contains("King") && event.getEntity() instanceof Zombie) {
             event.getDrops().clear();
 
-            plugin.getArenaManager().getArenaByPlayer(player).endGame();
+            plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).endGame();
         }
     }
 
 }
-

@@ -1,12 +1,17 @@
 package me.cbhud.castlesiege.events;
 
 import me.cbhud.castlesiege.CastleSiege;
+import me.cbhud.castlesiege.player.PlayerState;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.UUID;
 
 public class JoinEvent implements Listener {
 
@@ -22,26 +27,27 @@ public class JoinEvent implements Listener {
         Player p = e.getPlayer();
 
         if(plugin.getSlc().getLobby() == null){
-            p.sendMessage("Lobby location is not set!");
-            p.sendMessage("Use /setlobby to set lobby location");
-        }else{
-        p.teleport(plugin.getSlc().getLobby());}
-        p.setGameMode(GameMode.ADVENTURE);
+            p.sendMessage("§CLobby location is not set!");
+            p.sendMessage("§cUse /setlobby to set lobby location");
+        }
+
         for (String i:  plugin.getMsg().getMessage("join-server-msg", p)){
             p.sendMessage(i);
         }
 
-        //give him lobby items
-        plugin.getScoreboardManager().setupScoreboard(p);
+        plugin.getPlayerManager().setPlayerAsLobby(p);
+
     }
 
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e){
         Player p = e.getPlayer();
+        if (plugin.getPlayerManager().getPlayerState(p) == PlayerState.PLAYING || plugin.getPlayerManager().getPlayerState(p) == PlayerState.WAITING || plugin.getPlayerManager().getPlayerState(p) == PlayerState.SPECTATOR) {
+            UUID playerId = p.getUniqueId();
+            plugin.getArenaManager().getArenaByPlayer(playerId).removePlayer(p);
+        }
         plugin.getScoreboardManager().removeScoreboard(p);
-        //unregister scoreboards
-        //
     }
 
 }

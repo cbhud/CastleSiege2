@@ -2,14 +2,13 @@ package me.cbhud.castlesiege.arena;
 
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.team.Team;
+import me.cbhud.castlesiege.team.TeamManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
-import org.bukkit.scheduler.BukkitScheduler;
 
-import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class Arena {
     private final String id;
@@ -24,10 +23,12 @@ public class Arena {
     private final Set<Player> players;
     private final CastleSiege plugin;
     private ArenaState state;
-    private boolean autoStartActive;
-    private int timer;
-    private HashMap<Player, Team> teamMap;
+    private int countdownTimer;
+    private int autoStartTimer;
     private int countdownTaskId = -1;
+    private int autostartTaskId = -1;
+    private TeamManager teamManager;
+    private int winner;
 
     public Arena(CastleSiege plugin, String id, Location lobbySpawn, Location kingSpawn, Location attackersSpawn, Location defendersSpawn, int max, int min, int autoStart, int countdown, Set<Player> players) {
         this.plugin = plugin;
@@ -42,8 +43,7 @@ public class Arena {
         this.countdown = countdown;
         this.players = players;
         this.state = ArenaState.WAITING;
-        this.autoStartActive = false;
-        this.teamMap = new HashMap<>();
+        this.teamManager = new TeamManager(plugin, plugin.getConfigManager().getConfig());
     }
 
     public Location getKingSpawn() {
@@ -58,20 +58,16 @@ public class Arena {
         return defendersSpawn;
     }
 
+    public int getNoPlayers() {
+        return players.size();
+    }
+
     public int getMax() {
         return maxPlayers;
     }
 
     public int getMin() {
         return minPlayers;
-    }
-
-    public int getAutoStart() {
-        return autoStart;
-    }
-
-    public int getCountdown() {
-        return countdown;
     }
 
     public Set<Player> getPlayers() {
@@ -86,85 +82,98 @@ public class Arena {
         return state;
     }
 
-    public void setState(ArenaState state) {
-        this.state = state;
-    }
-
     public boolean addPlayer(Player player) {
+        if (players.size() >= getMax()) {
+            player.sendMessage("Arena is full!");
+            return false;
+        }
+
         if (state != ArenaState.WAITING) return false;
         players.add(player);
-        player.teleport(lobbySpawn);
-        if (checkIfMin()){
+        if (minPlayers >= getMin()) {
             startAutoStart(autoStart);
         }
-        plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
-        //update scoreboard
-        //give items Kit Selector and Team Selector
-        //check for min players to start auto-start timer
+        teamManager.tryRandomTeamJoin(player);
         return true;
     }
 
     public void removePlayer(Player player) {
         players.remove(player);
-    }
-
-    public void startGame() {
-        if (state == ArenaState.WAITING) {
-            state = ArenaState.IN_GAME;
-            plugin.getMobManager().spawnCustomMob(kingSpawn);
-            for (Player p : players) {
-                p.teleport(defendersSpawn);
-                p.sendMessage("The game has started");
-                plugin.getScoreboardManager().updateScoreboard(p, "in-game");
-            }
-
-            startCountdown(countdown);
-
+        teamManager.removePlayerFromTeam(player);
+        plugin.getScoreboardManager().updateScoreboard(player, "lobby");
+        if (players.size() < minPlayers && state == ArenaState.WAITING && autostartTaskId != -1) {
+            stopAutoStart();
+        }
+        if (player != null) {
+            plugin.getPlayerManager().setPlayerAsLobby(player);
         }
     }
 
-    public Zombie getKing(){
-        return plugin.getMobManager().getKingZombie(kingSpawn.getWorld());
+    public void startGame() {
+        if (state != ArenaState.WAITING) {
+            Bukkit.broadcastMessage("You cannot start game in this state!");
+        }
+        state = ArenaState.IN_GAME;
+        plugin.getMobManager().spawnCustomMob(kingSpawn);
+        players.forEach(player -> {
+            plugin.getMsg().getMessage("game-start-msg", player).forEach(player::sendMessage);
+        });
+        teleportTeamsToSpawns();
+        startCountdown(countdown);
     }
 
-    public double getKingZombieHealth(){
-        if(plugin.getMobManager().getKingZombie(kingSpawn.getWorld()) != null){
-        return plugin.getMobManager().getZombieHealth(plugin.getMobManager().getKingZombie(kingSpawn.getWorld()));
-        }else {
+    public double getKingZombieHealth() {
+        if (plugin.getMobManager().getKingZombie(kingSpawn.getWorld()) != null) {
+            return plugin.getMobManager().getZombieHealth(plugin.getMobManager().getKingZombie(kingSpawn.getWorld()));
+        } else {
             return 0.0;
         }
     }
 
-
-    public boolean checkIfMin(){
-        return players.size() >= minPlayers;
-    }
-
     public void endGame() {
         state = ArenaState.ENDED;
+
+        // Stop countdown if needed
         if (countdownTaskId != -1) {
             stopCountdown();
-            for (Player player : players) {
-                plugin.getScoreboardManager().updateScoreboard(player, "end");
-                    player.sendMessage("Vikings won!");
-            }
-                } else {
-            plugin.getMobManager().removeCustomZombie(this);
-            for (Player player : players) {
-                player.sendMessage("Franks won!");
-            }
-                }
-        for (Player player : players) {
-            player.teleport(plugin.getSlc().getLobby());
-            plugin.getScoreboardManager().updateScoreboard(player, "lobby");
+            winner = 1;
 
+            players.forEach(player -> {
+                plugin.getScoreboardManager().updateScoreboard(player, "end");
+                plugin.getMsg().getMessage("attackers-win-msg", player).forEach(player::sendMessage);
+            });
+        } else {
+            winner = 0;
+            plugin.getMobManager().removeCustomZombie(this);
+            players.forEach(player -> {
+                plugin.getScoreboardManager().updateScoreboard(player, "end");
+                plugin.getMsg().getMessage("defenders-win-msg", player).forEach(player::sendMessage);
+            });
         }
-        //clear arena
-        //set arena to pre_game
-        //update stats
-        //gameendhandler
-        players.clear();
-        state = ArenaState.WAITING;
+
+        // 20-second delay before teleporting players to the lobby
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // Async teleportation to the lobby
+            CompletableFuture.runAsync(() -> {
+                players.forEach(player -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    player.teleport(plugin.getSlc().getLobby());
+                    plugin.getArenaManager().removePlayerFromArena(player);
+                    plugin.getScoreboardManager().updateScoreboard(player, "lobby");
+                    plugin.getPlayerManager().setPlayerAsLobby(player);
+                }));
+
+                // Clear the players, teams, and reset the state
+                players.clear();
+                teamManager.clearTeams();
+                state = ArenaState.WAITING;
+                winner = -1;
+
+                // Perform any other cleanup (arena, stats, etc.)
+                // TODO: clear arena
+                // TODO: update stats
+                // TODO: game end handler
+            });
+        }, 20 * 20L); // 20 seconds delay (20 ticks per second)
     }
 
     public Location getLobbySpawn() {
@@ -172,29 +181,24 @@ public class Arena {
     }
 
     public void startCountdown(int seconds) {
-        if (autoStartActive) {
-            Bukkit.broadcastMessage("§cA countdown is already running!");
+        if (countdownTaskId != -1) {
             return;
         }
 
-        timer = seconds;
-        autoStartActive = true;
+        countdownTimer = seconds;
 
         countdownTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             @Override
             public void run() {
-                if (timer <= 0) {
+                if (countdownTimer <= 0) {
                     stopCountdown(); // Stops the countdown when it reaches 0
                     endGame();
                     return;
                 }
 
-                for (Player player : players) {
-                    plugin.getScoreboardManager().updateScoreboard(player,"in-game");
-                    player.sendMessage("§eTime left: " + timer + " seconds");
-                }
+                players.forEach(player -> plugin.getScoreboardManager().updateScoreboard(player, "in-game"));
 
-                timer--;
+                countdownTimer--;
             }
         }, 0L, 20L); // Runs every 20 ticks (1 second)
     }
@@ -203,52 +207,122 @@ public class Arena {
         if (countdownTaskId != -1) {
             Bukkit.getScheduler().cancelTask(countdownTaskId);
             countdownTaskId = -1;
-            autoStartActive = false;
-            Bukkit.broadcastMessage("§cCountdown has been canceled!");
         }
     }
 
-
     public int getTimer() {
-        return timer;
+        return countdownTimer;
     }
 
     public void startAutoStart(int seconds) {
-        if (autoStartActive) {
-            Bukkit.broadcastMessage("§cA countdown is already running!");
+        if (autostartTaskId != -1) {
             return;
         }
-        autoStartActive = true; // Mark countdown as active
-        BukkitScheduler scheduler = Bukkit.getScheduler();
 
-        scheduler.runTaskAsynchronously(plugin, () -> {
-            for (int i = seconds; i >= 0; i--) {
-                int timeLeft = i;
-                try {
-                    Thread.sleep(1000); // Sleep for 1 second (runs async)
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    autoStartActive = false; // Reset flag if interrupted
+        autoStartTimer = seconds;
+
+        autostartTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                if (autoStartTimer <= 0) {
+                    stopAutoStart();
+                    startGame();
                     return;
                 }
 
-                // Switch back to the main thread to safely interact with Bukkit API
-                scheduler.runTask(plugin, () -> {
-                    if (timeLeft > 0) {
-                        for (Player player : players) {
-                            player.sendMessage("§eStarting in: " + timeLeft + " seconds");
-                        }
-                    } else {
-                        autoStartActive = false; // Reset flag when countdown ends
-                        startGame();
+                players.forEach(player -> {
+                    switch (autoStartTimer) {
+                        case 60:
+                            player.sendMessage("Starting in 60 seconds!");
+                            break;
+                        case 45:
+                            player.sendMessage("Starting in 45 seconds!");
+                            break;
+                        case 30:
+                            player.sendMessage("Starting in 30 seconds!");
+                            break;
+                        case 15:
+                            player.sendMessage("Starting in 15 seconds!");
+                            break;
+                        case 10:
+                            player.sendMessage("Starting in 10 seconds!");
+                            break;
+                        case 5:
+                            player.sendMessage("Starting in 5 seconds!");
+                            break;
+                        case 4:
+                            player.sendMessage("Starting in 4 seconds!");
+                            break;
+                        case 3:
+                            player.sendMessage("Starting in 3 seconds!");
+                            break;
+                        case 2:
+                            player.sendMessage("Starting in 2 seconds!");
+                            break;
+                        case 1:
+                            player.sendMessage("Starting in 1 second!");
+                            break;
+                        default:
+                            break;  // Optional: just in case the value doesn't match any case
                     }
                 });
+
+                autoStartTimer--;
+            }
+        }, 0L, 20L); // Runs every 20 ticks (1 second)
+    }
+
+    public void stopAutoStart() {
+        if (autostartTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(autostartTaskId);
+            autostartTaskId = -1;
+            Bukkit.broadcastMessage("§cAuto-Start has been stopped!");
+        }
+    }
+
+    public int getAttackersSize() {
+        return teamManager.getPlayersInTeam(Team.Attackers);
+    }
+
+    public int getDefendersSize() {
+        return teamManager.getPlayersInTeam(Team.Defenders);
+    }
+
+    public Team getTeam(Player player) {
+        return teamManager.getTeam(player);
+    }
+
+    public boolean joinTeam(Player p, Team t) {
+        teamManager.joinTeam(p, t);
+        return true;
+    }
+
+    public void teleportTeamsToSpawns() {
+        CompletableFuture.runAsync(() -> {
+            for (Team team : Team.values()) {
+                Location teamSpawn = getSpawnLocationForTeam(team);
+                if (teamSpawn == null) continue;
+
+                Set<Player> teamPlayers = teamManager.getPlayersInTeams(team);
+                if (teamPlayers.isEmpty()) continue;
+
+                Bukkit.getScheduler().runTask(plugin, () -> teamPlayers.forEach(player -> {
+                    plugin.getPlayerManager().setPlayerAsPlaying(player);
+                    player.teleport(teamSpawn);
+                }));
             }
         });
     }
 
+    private Location getSpawnLocationForTeam(Team team) {
+        if (team == Team.Attackers) {
+            return getAttackersSpawn();
+        } else {
+            return getDefendersSpawn();
+        }
+    }
 
+    public int getWinner() {
+        return winner;
+    }
 }
-
-
-

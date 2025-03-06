@@ -1,2 +1,21 @@
-king-name: "Charles II"
-king-health: 40.0
+##MAX PLAYERS IN TEAM
+maxPlayersPerTeam: 8
+
+##CHANGE TEAM NAMES
+attackersTeamName: Attackers
+defendersTeamName: Defenders
+
+##ADJUST COINS PER KILL AND WIN
+coins-on-win: 3
+coins-on-kill: 1
+
+### ADJUST KING HEALTH NOTE IT SHOULD BE WITH ONE DECIMAL EXAMPLE : 80.0
+king-health: 80.0
+king-name: Marcus
+
+## ADJUST BOMBARDIER KIT TNT COOLDOWN IN SECONDS TO YOUR NEEDS
+tntCooldown: 20
+
+## ADJUST TNT DAMAGE TO PLAYERS TNT CANNOT DAMAGE KING
+tntDamage: 7.0
+## 7.0 damage = 2 hearts

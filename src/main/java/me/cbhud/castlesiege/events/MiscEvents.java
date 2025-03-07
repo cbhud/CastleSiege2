@@ -2,6 +2,7 @@ package me.cbhud.castlesiege.events;
 
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.player.PlayerState;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -53,31 +54,41 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        if (plugin.getPlayerManager().getPlayerState(player) == PlayerState.PLAYING && event.getBlock().getType() == Material.OAK_FENCE){
-            event.setCancelled(false);
-        }
-        if (player.hasPermission("cs.admin") || player.isOp()){
-            event.setCancelled(false);
-        }else {
-            event.setCancelled(true);
-        }
-    }
 
+        // Allow if player is in PLAYING state and breaking an OAK_FENCE
+        if (plugin.getPlayerManager().getPlayerState(player) == PlayerState.PLAYING
+                && event.getBlock().getType() == Material.OAK_FENCE) {
+            return; // Exit early to avoid overriding
+        }
+
+        // Allow if player has admin permissions or is OP
+        if (player.hasPermission("cs.admin") || player.isOp()) {
+            return;
+        }
+
+        // If none of the above conditions are met, cancel the event
+        event.setCancelled(true);
+    }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event){
-
+    public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
-        if (plugin.getPlayerManager().getPlayerState(player) == PlayerState.PLAYING && event.getBlock().getType() == Material.OAK_FENCE){
-            event.setCancelled(false);
+
+        // Allow if player is in PLAYING state and placing an OAK_FENCE
+        if (plugin.getPlayerManager().getPlayerState(player) == PlayerState.PLAYING
+                && event.getBlock().getType() == Material.OAK_FENCE) {
+            return;
         }
 
-        if (player.hasPermission("cs.admin") || player.isOp()){
-            event.setCancelled(false);
-        }else {
-            event.setCancelled(true);
+        // Allow if player has admin permissions or is OP
+        if (player.hasPermission("cs.admin") || player.isOp()) {
+            return;
         }
+
+        // If none of the above conditions are met, cancel the event
+        event.setCancelled(true);
     }
+
 
 
 }

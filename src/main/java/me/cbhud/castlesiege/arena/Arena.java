@@ -4,6 +4,7 @@ import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.team.Team;
 import me.cbhud.castlesiege.team.TeamManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -83,17 +84,30 @@ public class Arena {
     }
 
     public boolean addPlayer(Player player) {
+        if (state == ArenaState.ENDED){            player.sendMessage("§cThis arena is currently not available.");
+        return false;}
         if (players.size() >= getMax()) {
-            player.sendMessage("Arena is full!");
+            player.sendMessage("§cArena is full!");
             return false;
         }
 
-        if (state != ArenaState.WAITING) return false;
+        player.sendMessage("§aYou have joined the arena: " + getId());
+
+        if(state == ArenaState.IN_GAME || !teamManager.tryRandomTeamJoin(player)) {
+            player.sendTitle("§8You are now spectating!", "§7Please wait until game concludes or /leave", 10, 70, 20);
+            plugin.getPlayerManager().setPlayerAsSpectating(player);
+            player.teleport(getKingSpawn());
+            players.add(player);
+            return true;
+        }
         players.add(player);
-        if (minPlayers >= getMin()) {
+        player.teleport(getLobbySpawn());
+        plugin.getPlayerManager().setPlayerAsWaiting(player);
+
+        if (players.size() >= getMin()) {
             startAutoStart(autoStart);
         }
-        teamManager.tryRandomTeamJoin(player);
+
         return true;
     }
 
@@ -107,6 +121,7 @@ public class Arena {
         if (player != null) {
             plugin.getPlayerManager().setPlayerAsLobby(player);
         }
+        plugin.getArenaManager().playerArenaMap.remove(player.getUniqueId());
     }
 
     public void startGame() {
@@ -141,6 +156,8 @@ public class Arena {
             players.forEach(player -> {
                 plugin.getScoreboardManager().updateScoreboard(player, "end");
                 plugin.getMsg().getMessage("attackers-win-msg", player).forEach(player::sendMessage);
+                player.sendTitle(ChatColor.RED + plugin.getConfigManager().getAttacker(), "§ewon the game!", 10, 70, 20);
+
             });
         } else {
             winner = 0;
@@ -148,6 +165,7 @@ public class Arena {
             players.forEach(player -> {
                 plugin.getScoreboardManager().updateScoreboard(player, "end");
                 plugin.getMsg().getMessage("defenders-win-msg", player).forEach(player::sendMessage);
+                player.sendTitle(ChatColor.AQUA + plugin.getConfigManager().getDefender(), "§ewon the game!", 10, 70, 20);
             });
         }
 
@@ -324,5 +342,10 @@ public class Arena {
 
     public int getWinner() {
         return winner;
+    }
+
+    public Location getTeamSpawn(Team team) {
+    if (team == Team.Attackers) {return attackersSpawn;}
+    return defendersSpawn;
     }
 }

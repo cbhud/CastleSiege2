@@ -85,14 +85,7 @@ public class ArenaSelector {
 
         event.setCancelled(true);
 
-        if (arena.getState() == WAITING) {
             plugin.getArenaManager().addPlayerToArena(player, arena);
-            player.teleport(arena.getLobbySpawn());
-            plugin.getPlayerManager().setPlayerAsWaiting(player);
-            player.sendMessage("§aYou have joined the arena: " + arena.getId());
-        } else {
-            player.sendMessage("§cThis arena is currently not available.");
-        }
 
         gui.close(player);
     }

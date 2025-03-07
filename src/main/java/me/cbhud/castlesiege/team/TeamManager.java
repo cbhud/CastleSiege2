@@ -44,8 +44,6 @@ public class TeamManager {
 
         plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
 
-        broadcastTeamCounts();
-
         return true;
     }
 
@@ -59,7 +57,6 @@ public class TeamManager {
             updateTeamCount(previousTeam, -1); // Decrease the count of the old team
             playerTeams.remove(player.getUniqueId().toString());
         }
-        broadcastTeamCounts();
     }
 
     public Set<Player> getPlayersInTeams(Team team) {
@@ -108,7 +105,4 @@ public class TeamManager {
         if (defenders < 0) defenders = 0;
     }
 
-    private void broadcastTeamCounts() {
-        Bukkit.broadcastMessage("Team Counts -> Defenders: " + defenders + ", Attackers: " + attackers);
-    }
 }

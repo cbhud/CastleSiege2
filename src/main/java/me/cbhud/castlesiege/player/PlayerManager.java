@@ -74,6 +74,11 @@ public class PlayerManager {
                     .lore(Component.text("§7Right-click to select the kit"))
                     .build());
             playerStates.put(player, WAITING);
+            player.getInventory().setItem(8, ItemBuilder.from(Material.RED_DYE)
+                    .name(Component.text("§cLeave Arena"))
+                    .lore(Component.text("§7Right-click to leave arena"))
+                    .build());
+            playerStates.put(player, WAITING);
 
             // Scoreboard update async
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> plugin.getScoreboardManager().updateScoreboard(player, "pre-game"));
@@ -81,9 +86,10 @@ public class PlayerManager {
     }
 
     public void setPlayerAsSpectating(Player player) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
             player.setGameMode(GameMode.SPECTATOR);
             playerStates.put(player, SPECTATOR);
-        });
     }
+
+
+
 }

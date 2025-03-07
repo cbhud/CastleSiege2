@@ -14,7 +14,7 @@ import java.util.*;
 
 public class ArenaManager {
     private final Map<String, Arena> arenas = new HashMap<>();
-    private final Map<UUID, Arena> playerArenaMap = new HashMap<>();
+    final Map<UUID, Arena> playerArenaMap = new HashMap<>();
     private final CastleSiege plugin;
     private final File configFile;
     private final FileConfiguration config;

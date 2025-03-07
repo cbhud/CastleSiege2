@@ -3,8 +3,6 @@ package me.cbhud.castlesiege.events;
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.arena.Arena;
 import me.cbhud.castlesiege.arena.ArenaState;
-import me.cbhud.castlesiege.team.Team;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -52,6 +50,12 @@ public class RightClickEffects implements Listener {
             return;
         }
 
+        if (clickedItem.getType() == Material.RED_DYE) {
+            player.sendMessage("§cYou have left the arena!");
+            arena.removePlayer(player);
+            return;
+        }
+
 //        if (player.getInventory().getItemInMainHand().isSimilar(ItemManager.axe)) {
 //            throwAxe(player);
 //        }
@@ -70,6 +74,8 @@ public class RightClickEffects implements Listener {
         if (item.getType() == Material.NETHER_STAR && arenaState == ArenaState.WAITING) {
             return true;
         }
+
+
 
 //        if (item.isSimilar(ItemManager.stew)) {
 //            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, EFFECT_DURATION, 1));

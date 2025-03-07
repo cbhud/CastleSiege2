@@ -18,7 +18,7 @@ public class CustomPlaceholder extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return "cs"; // %castlesiege_<placeholder>%
+        return "cs"; // %cs_<placeholder>%
     }
 
     @Override
@@ -67,6 +67,10 @@ public class CustomPlaceholder extends PlaceholderExpansion {
                 return String.valueOf(getArenaSize(plugin.getArenaManager().getArenaByPlayer(player.getUniqueId())));
             case "winner":
                 return getWinner(player);
+            case "attackers":
+                return getAttackersName();
+            case "defenders":
+                return getDefendersName();
 
             default:
                 return null; // Unknown placeholder
@@ -88,7 +92,12 @@ public class CustomPlaceholder extends PlaceholderExpansion {
     private double getKingHealth(Player player){
         return plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getKingZombieHealth();
     }
-
+    private String getAttackersName(){
+        return plugin.getConfigManager().getAttacker();
+    }
+    private String getDefendersName(){
+        return plugin.getConfigManager().getDefender();
+    }
     private int getAttackersSize(Player player){
         return plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getAttackersSize();
     }

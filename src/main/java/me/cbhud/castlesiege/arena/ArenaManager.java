@@ -3,12 +3,21 @@ package me.cbhud.castlesiege.arena;
 import org.bukkit.Bukkit;
 import java.io.File;
 
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.WorldEdit;
+import io.github.regenerato.worldedit.SchematicProcessor;
+import com.sk89q.worldedit.EmptyClipboardException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extension.platform.Actor;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.session.SessionManager;
+import org.bukkit.*;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import me.cbhud.castlesiege.CastleSiege;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.util.*;
@@ -68,10 +77,10 @@ public class ArenaManager {
         return new HashSet<>(arenas.values());
     }
 
-    public boolean addArena(Arena arena) {
+    public boolean addArena(Arena arena, Player player) {
         if (arenas.containsKey(arena.getId())) return false;
         arenas.put(arena.getId(), arena);
-        saveArena(arena);
+        saveArena(player, arena);
         return true;
     }
 
@@ -94,28 +103,76 @@ public class ArenaManager {
         }
     }
 
-    public void saveArena(Arena arena) {
-        ConfigurationSection arenasSection = config.getConfigurationSection("arenas");
-        if (arenasSection == null) {
-            arenasSection = config.createSection("arenas");
-        }
-
-        ConfigurationSection section = arenasSection.createSection(arena.getId());
-        section.set("lobby-spawn", formatLocation(arena.getLobbySpawn()));
-        section.set("king-spawn", formatLocation(arena.getKingSpawn()));
-        section.set("defenders-spawn", formatLocation(arena.getDefendersSpawn()));
-        section.set("attackers-spawn", formatLocation(arena.getAttackersSpawn()));
-        section.set("auto-start", 60);
-        section.set("game-timer", 300);
-        section.set("min-players", arena.getMin());
-        section.set("max-players", arena.getMax());
-
+    public void saveArena(Player player, Arena arena) {
         try {
+            SchematicProcessor processor = SchematicProcessor.newSchematicProcessor(plugin.getWorldEdit(), arena.getId(), plugin.getDataFolder());
+            processor.write(player);
+
+            Actor actor = BukkitAdapter.adapt(player);
+            SessionManager sessionManager = WorldEdit.getInstance().getSessionManager();
+            LocalSession session = sessionManager.get(actor);
+
+            if (session == null || session.getSelectionWorld() == null) {
+                player.sendMessage(ChatColor.RED + "No WorldEdit selection found! Select an area first.");
+                return;
+            }
+
+            Region region = session.getSelection(session.getSelectionWorld());
+
+            // Get min and max coordinates
+            int minX = region.getMinimumPoint().getBlockX();
+            int minY = region.getMinimumPoint().getBlockY();
+            int minZ = region.getMinimumPoint().getBlockZ();
+            int maxX = region.getMaximumPoint().getBlockX();
+            int maxY = region.getMaximumPoint().getBlockY();
+            int maxZ = region.getMaximumPoint().getBlockZ();
+
+            // Save paste location
+            Location loc = player.getLocation();
+            int pasteX = loc.getBlockX();
+            int pasteY = loc.getBlockY();
+            int pasteZ = loc.getBlockZ();
+
+            // Save locations to arenas.yml
+            ConfigurationSection arenasSection = config.getConfigurationSection("arenas");
+            if (arenasSection == null) {
+                arenasSection = config.createSection("arenas");
+            }
+
+            ConfigurationSection section = arenasSection.createSection(arena.getId());
+            section.set("lobby-spawn", formatLocation(arena.getLobbySpawn()));
+            section.set("king-spawn", formatLocation(arena.getKingSpawn()));
+            section.set("defenders-spawn", formatLocation(arena.getDefendersSpawn()));
+            section.set("attackers-spawn", formatLocation(arena.getAttackersSpawn()));
+            section.set("auto-start", 60);
+            section.set("game-timer", 300);
+            section.set("min-players", arena.getMin());
+            section.set("max-players", arena.getMax());
+
+            // Save WorldEdit region info
+            section.set("minX", minX);
+            section.set("maxX", maxX);
+            section.set("minY", minY);
+            section.set("maxY", maxY);
+            section.set("minZ", minZ);
+            section.set("maxZ", maxZ);
+            section.set("pasteX", pasteX);
+            section.set("pasteY", pasteY);
+            section.set("pasteZ", pasteZ);
+
+            // Save config to file
             config.save(configFile);
-        } catch (IOException e) {
+
+            player.sendMessage(ChatColor.GREEN + "Arena saved successfully!");
+
+        } catch (EmptyClipboardException e) {
+            player.sendMessage(ChatColor.RED + "No WorldEdit clipboard found.");
+        } catch (Exception e) {
+            player.sendMessage(ChatColor.RED + "Error saving arena! Make sure you have a valid selection.");
             e.printStackTrace();
         }
     }
+
 
     // Helper method to format a Location as a string
     private String formatLocation(Location location) {

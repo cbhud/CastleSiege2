@@ -108,7 +108,7 @@ public class CreateArenaCommand implements CommandExecutor {
         if (arena == null) return;
 
         if (arena.getLobbySpawn() != null && arena.getKingSpawn() != null && arena.getDefendersSpawn() != null && arena.getAttackersSpawn() != null) {
-            arenaManager.addArena(arena);
+            arenaManager.addArena(arena, player);
             arenaSetup.remove(arena.getId());
             playerSetup.remove(player.getUniqueId());
             player.sendMessage("§aArena setup complete! Arena saved to arenas.yml");

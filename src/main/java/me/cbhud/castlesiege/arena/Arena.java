@@ -5,9 +5,20 @@ import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.team.Team;
 import me.cbhud.castlesiege.team.TeamManager;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import io.github.regenerato.worldedit.SchematicProcessor;
+import io.github.regenerato.worldedit.NoSchematicException;
+import org.bukkit.scheduler.BukkitRunnable;
+
+
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,6 +41,7 @@ public class Arena {
     private int autostartTaskId = -1;
     private TeamManager teamManager;
     private int winner;
+    String worldName;
 
     public Arena(CastleSiege plugin, String id, Location lobbySpawn, Location kingSpawn, Location attackersSpawn, Location defendersSpawn, int max, int min, int autoStart, int countdown, String worldName) {
         this.plugin = plugin;
@@ -45,6 +57,8 @@ public class Arena {
         this.players = new HashSet<>();
         this.state = ArenaState.WAITING;
         this.teamManager = new TeamManager(plugin, plugin.getConfigManager().getConfig());
+        this.worldName = worldName;
+        this.winner = -1;
     }
 
 
@@ -193,6 +207,11 @@ public class Arena {
             });
         }, 10 * 20L);
 
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+
+            resetArena();
+
+        }, 15 * 20L);
 
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -201,6 +220,84 @@ public class Arena {
         }, 25 * 20L);
 
 
+    }
+
+
+
+    private void resetArena() {
+        try {
+            SchematicProcessor processor = SchematicProcessor.newSchematicProcessor(plugin.getWorldEdit(), getId(), plugin.getDataFolder());
+            World world = Bukkit.getWorld(worldName);
+
+            // Load arena bounds from arenas.yml
+            File configFile = new File(plugin.getDataFolder(), "arenas.yml");
+            FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+            String arenaPath = "arenas." + getId();
+
+            if (!config.contains(arenaPath + ".minX")) {
+                Bukkit.broadcastMessage(ChatColor.RED + "Arena location not set! Use /arenasave first.");
+                return;
+            }
+
+            int minX = config.getInt(arenaPath + ".minX");
+            int maxX = config.getInt(arenaPath + ".maxX");
+            int minY = config.getInt(arenaPath + ".minY");
+            int maxY = config.getInt(arenaPath + ".maxY");
+            int minZ = config.getInt(arenaPath + ".minZ");
+            int maxZ = config.getInt(arenaPath + ".maxZ");
+
+            int pasteX = config.getInt(arenaPath + ".pasteX");
+            int pasteY = config.getInt(arenaPath + ".pasteY");
+            int pasteZ = config.getInt(arenaPath + ".pasteZ");
+
+            // Clear the arena before pasting
+            clearArena(world, minX, maxX, minY, maxY, minZ, maxZ);
+
+            // Paste the schematic at the saved location
+            Location pasteLocation = new Location(world, pasteX, pasteY, pasteZ);
+            processor.paste(pasteLocation);
+            Bukkit.broadcastMessage(ChatColor.GREEN + "Arena " + getId() + " reset successfully!");
+
+        } catch (NoSchematicException e) {
+            Bukkit.broadcastMessage(ChatColor.RED + "No arena schematic found for " + getId() + "!");
+        } catch (Exception e) {
+            Bukkit.broadcastMessage(ChatColor.RED + "Error resetting arena " + getId() + "!");
+            e.printStackTrace();
+        }
+    }
+
+    private void clearArena(World world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            int batchSize = 500; // number of blocks per tick
+            List<Block> blocks = new ArrayList<>();
+
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        blocks.add(world.getBlockAt(x, y, z));
+                    }
+                }
+            }
+
+            new BukkitRunnable() {
+                int index = 0;
+
+                @Override
+                public void run() {
+                    int processed = 0;
+
+                    while (index < blocks.size() && processed < batchSize) {
+                        Block block = blocks.get(index++);
+                        block.setType(Material.AIR, false);
+                        processed++;
+                    }
+
+                    if (index >= blocks.size()) {
+                        cancel(); // All blocks processed
+                    }
+                }
+            }.runTaskTimer(plugin, 1L, 1L); // run every tick
+        });
     }
 
 

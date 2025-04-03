@@ -113,6 +113,6 @@ public class CustomPlaceholder extends PlaceholderExpansion {
     }
 
     private String getPlayerTeam(Player player) {
-        return plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player) != null ? plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player).toString() : "No team";
+        return plugin.getConfigManager().getTeamName(plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player));
     }
 }

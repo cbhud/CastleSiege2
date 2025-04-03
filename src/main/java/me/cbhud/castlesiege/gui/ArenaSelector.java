@@ -13,7 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
-import static me.cbhud.castlesiege.arena.ArenaState.WAITING;
 
 public class ArenaSelector {
 

@@ -1,22 +1,22 @@
 package me.cbhud.castlesiege.arena;
 
+import org.bukkit.Bukkit;
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.team.Team;
 import me.cbhud.castlesiege.team.TeamManager;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class Arena {
     private final String id;
-    private final Location lobbySpawn;
-    private final Location kingSpawn;
-    private final Location attackersSpawn;
-    private final Location defendersSpawn;
+    private Location lobbySpawn;
+    private Location kingSpawn;
+    private Location attackersSpawn;
+    private Location defendersSpawn;
     private final int maxPlayers;
     private final int minPlayers;
     private final int autoStart;
@@ -31,7 +31,7 @@ public class Arena {
     private TeamManager teamManager;
     private int winner;
 
-    public Arena(CastleSiege plugin, String id, Location lobbySpawn, Location kingSpawn, Location attackersSpawn, Location defendersSpawn, int max, int min, int autoStart, int countdown, Set<Player> players) {
+    public Arena(CastleSiege plugin, String id, Location lobbySpawn, Location kingSpawn, Location attackersSpawn, Location defendersSpawn, int max, int min, int autoStart, int countdown, String worldName) {
         this.plugin = plugin;
         this.id = id;
         this.lobbySpawn = lobbySpawn;
@@ -42,10 +42,11 @@ public class Arena {
         this.minPlayers = min;
         this.autoStart = autoStart;
         this.countdown = countdown;
-        this.players = players;
+        this.players = new HashSet<>();
         this.state = ArenaState.WAITING;
         this.teamManager = new TeamManager(plugin, plugin.getConfigManager().getConfig());
     }
+
 
     public Location getKingSpawn() {
         return kingSpawn;
@@ -84,8 +85,11 @@ public class Arena {
     }
 
     public boolean addPlayer(Player player) {
-        if (state == ArenaState.ENDED){            player.sendMessage("§cThis arena is currently not available.");
-        return false;}
+        if (state == ArenaState.ENDED){
+        player.sendMessage("§cThis arena is currently not available.");
+        return false;
+        }
+
         if (players.size() >= getMax()) {
             player.sendMessage("§cArena is full!");
             return false;
@@ -179,20 +183,30 @@ public class Arena {
                     plugin.getScoreboardManager().updateScoreboard(player, "lobby");
                     plugin.getPlayerManager().setPlayerAsLobby(player);
                 }));
-
-                // Clear the players, teams, and reset the state
                 players.clear();
                 teamManager.clearTeams();
-                state = ArenaState.WAITING;
-                winner = -1;
 
-                // Perform any other cleanup (arena, stats, etc.)
+
                 // TODO: clear arena
                 // TODO: update stats
                 // TODO: game end handler
             });
-        }, 20 * 20L); // 20 seconds delay (20 ticks per second)
+        }, 10 * 20L);
+
+
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            state = ArenaState.WAITING;
+            winner = -1;
+        }, 25 * 20L);
+
+
     }
+
+
+
+
+
 
     public Location getLobbySpawn() {
         return lobbySpawn;
@@ -348,4 +362,23 @@ public class Arena {
     if (team == Team.Attackers) {return attackersSpawn;}
     return defendersSpawn;
     }
+
+    public void setLobbySpawn(Location loc) {
+        this.lobbySpawn = loc;
+    }
+
+    public void setKingSpawn(Location loc) {
+        this.kingSpawn = loc;
+    }
+
+    public void setDefendersSpawn(Location loc) {
+        defendersSpawn = loc;
+    }
+
+    public void setAttackersSpawn(Location loc) {
+        attackersSpawn = loc;
+    }
+
+
+
 }

@@ -1,18 +1,16 @@
 package me.cbhud.castlesiege.cmds;
 
 import me.cbhud.castlesiege.CastleSiege;
-import me.cbhud.castlesiege.arena.Arena;
-import me.cbhud.castlesiege.arena.ArenaState;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class JoinArenaCommand implements CommandExecutor {
+public class LeaveArenaCommand implements CommandExecutor {
     private final CastleSiege plugin;
 
-    public JoinArenaCommand(CastleSiege plugin) {
+    public LeaveArenaCommand(CastleSiege plugin) {
         this.plugin = plugin;
     }
 
@@ -25,12 +23,16 @@ public class JoinArenaCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
-        if (args.length != 1) {
-            plugin.getArenaSelector().open(player);
+        if (args.length != 0) {
+            player.sendMessage(ChatColor.RED + "Usage: /leave");
+            return true;
+        }
+        if (plugin.getPlayerManager().getPlayerState(player) == me.cbhud.castlesiege.player.PlayerState.PLAYING) {
+            player.sendMessage(ChatColor.RED + "You cannot leave now!");
             return true;
         }
 
-        plugin.getTeamSelector().open(player);
+        plugin.getArenaManager().removePlayerFromArena(player);
 
 
         return true;

@@ -1,3 +1,10 @@
+//kit icon
+//auto select default kit for team on random join
+//nakon smrti give kit opet
+//team damage team
+//proveri sta se desava sa joinom i itemima i stateom playera na join
+
+
 package me.cbhud.castlesiege.events;
 
 import me.cbhud.castlesiege.CastleSiege;

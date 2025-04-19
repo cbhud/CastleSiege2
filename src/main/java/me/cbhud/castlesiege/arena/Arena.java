@@ -16,10 +16,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class Arena {
@@ -59,6 +56,10 @@ public class Arena {
         this.teamManager = new TeamManager(plugin, plugin.getConfigManager().getConfig());
         this.worldName = worldName;
         this.winner = -1;
+        Objects.requireNonNull(Bukkit.getWorld(worldName)).setAutoSave(false);
+        Bukkit.broadcastMessage("WORLD AUTO SAVE JE: "+ Objects.requireNonNull(Bukkit.getWorld(worldName)).isAutoSave());
+        Bukkit.broadcastMessage("WORLD AUTO SAVE JE: "+ Objects.requireNonNull(Bukkit.getWorld(worldName)).isAutoSave());
+        Bukkit.broadcastMessage("WORLD AUTO SAVE JE: "+ Objects.requireNonNull(Bukkit.getWorld(worldName)).isAutoSave());
     }
 
 
@@ -150,6 +151,7 @@ public class Arena {
         plugin.getMobManager().spawnCustomMob(kingSpawn);
         players.forEach(player -> {
             plugin.getMsg().getMessage("game-start-msg", player).forEach(player::sendMessage);
+
         });
         teleportTeamsToSpawns();
         startCountdown(countdown);
@@ -207,17 +209,8 @@ public class Arena {
             });
         }, 10 * 20L);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        Bukkit.getScheduler().runTaskLater(plugin, this::resetArena, 20 * 20L);
 
-            resetArena();
-
-        }, 15 * 20L);
-
-
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            state = ArenaState.WAITING;
-            winner = -1;
-        }, 25 * 20L);
 
 
     }
@@ -226,10 +219,10 @@ public class Arena {
 
     private void resetArena() {
         try {
-            SchematicProcessor processor = SchematicProcessor.newSchematicProcessor(plugin.getWorldEdit(), getId(), plugin.getDataFolder());
+            File schematicFolder = new File(plugin.getDataFolder(), "schematics");
+            SchematicProcessor processor = SchematicProcessor.newSchematicProcessor(plugin.getWorldEdit(), getId(), schematicFolder);
             World world = Bukkit.getWorld(worldName);
 
-            // Load arena bounds from arenas.yml
             File configFile = new File(plugin.getDataFolder(), "arenas.yml");
             FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
             String arenaPath = "arenas." + getId();
@@ -250,25 +243,31 @@ public class Arena {
             int pasteY = config.getInt(arenaPath + ".pasteY");
             int pasteZ = config.getInt(arenaPath + ".pasteZ");
 
-            // Clear the arena before pasting
-            clearArena(world, minX, maxX, minY, maxY, minZ, maxZ);
 
-            // Paste the schematic at the saved location
-            Location pasteLocation = new Location(world, pasteX, pasteY, pasteZ);
-            processor.paste(pasteLocation);
-            Bukkit.broadcastMessage(ChatColor.GREEN + "Arena " + getId() + " reset successfully!");
+            // Wait until clearing is done, then paste
+            clearArena(world, minX, maxX, minY, maxY, minZ, maxZ, () -> {
+                try {
+                    Location pasteLocation = new Location(world, pasteX, pasteY, pasteZ);
+                    processor.paste(pasteLocation);
+                } catch (NoSchematicException e) {
+                    throw new RuntimeException(e);
+                }
+                Bukkit.broadcastMessage(ChatColor.GREEN + "Arena " + getId() + " reset successfully!");
+                state = ArenaState.WAITING;
+                winner = -1;
+            });
 
-        } catch (NoSchematicException e) {
-            Bukkit.broadcastMessage(ChatColor.RED + "No arena schematic found for " + getId() + "!");
-        } catch (Exception e) {
-            Bukkit.broadcastMessage(ChatColor.RED + "Error resetting arena " + getId() + "!");
-            e.printStackTrace();
-        }
+
+    }catch (Exception e) {
+        Bukkit.broadcastMessage(ChatColor.RED + "Error resetting arena " + getId() + "!");
+        e.printStackTrace();
+    }
     }
 
-    private void clearArena(World world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+
+    private void clearArena(World world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, Runnable onComplete) {
         Bukkit.getScheduler().runTask(plugin, () -> {
-            int batchSize = 500; // number of blocks per tick
+            int batchSize = 5000;
             List<Block> blocks = new ArrayList<>();
 
             for (int x = minX; x <= maxX; x++) {
@@ -285,7 +284,6 @@ public class Arena {
                 @Override
                 public void run() {
                     int processed = 0;
-
                     while (index < blocks.size() && processed < batchSize) {
                         Block block = blocks.get(index++);
                         block.setType(Material.AIR, false);
@@ -293,12 +291,16 @@ public class Arena {
                     }
 
                     if (index >= blocks.size()) {
-                        cancel(); // All blocks processed
+                        cancel();
+                        if (onComplete != null) {
+                            Bukkit.getScheduler().runTask(plugin, onComplete);
+                        }
                     }
                 }
-            }.runTaskTimer(plugin, 1L, 1L); // run every tick
+            }.runTaskTimer(plugin, 1L, 1L);
         });
     }
+
 
 
 
@@ -438,6 +440,10 @@ public class Arena {
                 Bukkit.getScheduler().runTask(plugin, () -> teamPlayers.forEach(player -> {
                     plugin.getPlayerManager().setPlayerAsPlaying(player);
                     player.teleport(teamSpawn);
+                    if (!plugin.getPlayerKitManager().hasSelectedKit(player)){
+                        plugin.getPlayerKitManager().setDefaultKit(player);
+                    }
+                    plugin.getPlayerKitManager().giveKit(player, plugin.getPlayerKitManager().getSelectedKit(player));
                 }));
             }
         });

@@ -71,6 +71,12 @@ public class CustomPlaceholder extends PlaceholderExpansion {
                 return getAttackersName();
             case "defenders":
                 return getDefendersName();
+            case "kit":
+                if (plugin.getPlayerKitManager().hasSelectedKit(player)) {
+                    return getPlayerKit(player);
+                } else {
+                    return "No kit selected";
+                }
 
             default:
                 return null; // Unknown placeholder
@@ -110,6 +116,9 @@ public class CustomPlaceholder extends PlaceholderExpansion {
         }else {
             return plugin.getConfigManager().getTeamName(Team.Defenders);
         }
+    }
+    private String getPlayerKit(Player player) {
+        return plugin.getPlayerKitManager().getSelectedKit(player).getName();
     }
 
     private String getPlayerTeam(Player player) {

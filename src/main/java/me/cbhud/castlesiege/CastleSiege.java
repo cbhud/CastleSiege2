@@ -11,7 +11,11 @@ import me.cbhud.castlesiege.events.JoinEvent;
 import me.cbhud.castlesiege.events.MiscEvents;
 import me.cbhud.castlesiege.events.RightClickEffects;
 import me.cbhud.castlesiege.gui.ArenaSelector;
+import me.cbhud.castlesiege.gui.KitSelector;
 import me.cbhud.castlesiege.gui.TeamSelector;
+import me.cbhud.castlesiege.kits.ItemManager;
+import me.cbhud.castlesiege.kits.KitManager;
+import me.cbhud.castlesiege.kits.PlayerKitManager;
 import me.cbhud.castlesiege.player.PlayerManager;
 import me.cbhud.castlesiege.scoreboard.ScoreboardManager;
 import me.cbhud.castlesiege.team.TeamManager;
@@ -40,11 +44,26 @@ public final class CastleSiege extends JavaPlugin {
     PlayerManager playerManager;
     Regenerato regenerato;
     WorldEditPlugin worldEdit;
+    KitManager kitManager;
+    PlayerKitManager playerKitManager;
+    KitSelector kitSelector;
+    ItemManager itemManager;
 
     @Override
     public void onEnable() {
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new CustomPlaceholder(this).register();
+        }
         configManager = new ConfigManager(this);
         arenaManager = new ArenaManager(this);
+        regenerato = (Regenerato) Bukkit.getPluginManager().getPlugin("Regenerato");
+        worldEdit = (WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit");
+        if (regenerato == null || worldEdit == null) {
+            getLogger().severe("Regenerato or WorldEdit plugin not found! Disabling plugin.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         getCommand("cs").setExecutor(new CreateArenaCommand(this, arenaManager));
         arenaSelector = new ArenaSelector(this);
         msg = new Messages(this);
@@ -56,20 +75,16 @@ public final class CastleSiege extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new RightClickEffects(this), this);
         teamManager = new TeamManager(this, this.getConfig());
         mobManager = new MobManager(this);
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new CustomPlaceholder(this).register();
-        }
+
         scoreboardManager = new ScoreboardManager(this);
         playerManager = new PlayerManager(this);
         getServer().getPluginManager().registerEvents(new MiscEvents(this), this);
-        regenerato = (Regenerato) Bukkit.getPluginManager().getPlugin("Regenerato");
-        worldEdit = (WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit");
 
-        if (regenerato == null || worldEdit == null) {
-            getLogger().severe("Regenerato or WorldEdit plugin not found! Disabling plugin.");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
+
+        itemManager = new ItemManager();
+        kitManager = new KitManager(this);
+        playerKitManager = new PlayerKitManager(this);
+        kitSelector = new KitSelector(this);
     }
 
     @Override
@@ -122,6 +137,13 @@ public final class CastleSiege extends JavaPlugin {
     }
     public WorldEditPlugin getWorldEdit() {
         return worldEdit;
+    }
+    public KitManager getKitManager() {return kitManager;}
+    public PlayerKitManager getPlayerKitManager() {
+        return playerKitManager;
+    }
+    public KitSelector getKitSelector() {
+        return kitSelector;
     }
 
 }

@@ -3,6 +3,9 @@ package me.cbhud.castlesiege.events;
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.arena.Arena;
 import me.cbhud.castlesiege.arena.ArenaState;
+import me.cbhud.castlesiege.kits.ItemManager;
+import me.cbhud.castlesiege.team.Team;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -56,9 +59,9 @@ public class RightClickEffects implements Listener {
             return;
         }
 
-//        if (player.getInventory().getItemInMainHand().isSimilar(ItemManager.axe)) {
-//            throwAxe(player);
-//        }
+        if (player.getInventory().getItemInMainHand().isSimilar(ItemManager.axe)) {
+            throwAxe(player);
+        }
 
         if (useSpecialItem(player, clickedItem, arena.getState())) {
             removeItem(player, clickedItem, arena.getState());
@@ -72,57 +75,56 @@ public class RightClickEffects implements Listener {
         }
 
         if (item.getType() == Material.NETHER_STAR && arenaState == ArenaState.WAITING) {
+            plugin.getKitSelector().open(player);
             return true;
         }
 
+        if (item.isSimilar(ItemManager.stew)) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, EFFECT_DURATION, 1));
+            return true;
+        }
 
+        if (item.isSimilar(ItemManager.rage)) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 2));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, EFFECT_DURATION, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, EFFECT_DURATION, 0));
+            return true;
+        }
 
-//        if (item.isSimilar(ItemManager.stew)) {
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, EFFECT_DURATION, 1));
-//            return true;
-//        }
-//
-//        if (item.isSimilar(ItemManager.rage)) {
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 2));
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, EFFECT_DURATION, 1));
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, EFFECT_DURATION, 0));
-//            return true;
-//        }
-//
-//        if (item.isSimilar(ItemManager.ragnarok)) {
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, EFFECT_DURATION, 0));
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 0));
-//            return true;
-//        }
-//
-//        if (item.isSimilar(ItemManager.sight)) {
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, EFFECT_DURATION * 2, 1));
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, EFFECT_DURATION, 1));
-//            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 1));
-//            return true;
-//        }
-//
-//        if (item.isSimilar(ItemManager.attack)) {
-//            for (Player nearbyPlayer : player.getWorld().getPlayers()) {
-//                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= 10 &&
-//                        plugin.getArenaManager().getArenaByPlayer(player).getTeam(player) == Team.Attackers) {
-//                    applyRandomEffect(nearbyPlayer);
-//                    player.sendMessage(ChatColor.RED + "Your spell has struck your opponents with powerful magic!");
-//                }
-//            }
-//            return true;
-//        }
-//
-//        if (item.isSimilar(ItemManager.support)) {
-//            for (Player nearbyPlayer : player.getWorld().getPlayers()) {
-//                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= 10 &&
-//                        plugin.getArenaManager().getArenaByPlayer(player).getTeam(player) == Team.Defenders) {
-//                    applyRandomSupportEffect(nearbyPlayer);
-//                    player.sendMessage(ChatColor.GREEN + "You have cast a supportive spell, empowering your nearby allies!");
-//                }
-//            }
-//            return true;
-//        }
+        if (item.isSimilar(ItemManager.ragnarok)) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, EFFECT_DURATION, 0));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 0));
+            return true;
+        }
+
+        if (item.isSimilar(ItemManager.sight)) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, EFFECT_DURATION * 2, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, EFFECT_DURATION, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 1));
+            return true;
+        }
+
+        if (item.isSimilar(ItemManager.attack)) {
+            for (Player nearbyPlayer : player.getWorld().getPlayers()) {
+                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= 10 &&
+                        plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player) == Team.Attackers) {
+                    applyRandomEffect(nearbyPlayer);
+                    player.sendMessage(ChatColor.RED + "Your spell has struck your opponents with powerful magic!");
+                }
+            }
+            return true;
+        }
+
+        if (item.isSimilar(ItemManager.support)) {
+            for (Player nearbyPlayer : player.getWorld().getPlayers()) {
+                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= 10 &&
+                        plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player) == Team.Defenders) {
+                    applyRandomSupportEffect(nearbyPlayer);
+                    player.sendMessage(ChatColor.GREEN + "You have cast a supportive spell, empowering your nearby allies!");
+                }
+            }
+            return true;
+        }
 
         return false;
     }

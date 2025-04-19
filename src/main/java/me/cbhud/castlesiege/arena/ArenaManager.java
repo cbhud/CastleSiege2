@@ -105,7 +105,11 @@ public class ArenaManager {
 
     public void saveArena(Player player, Arena arena) {
         try {
-            SchematicProcessor processor = SchematicProcessor.newSchematicProcessor(plugin.getWorldEdit(), arena.getId(), plugin.getDataFolder());
+            File schematicFolder = new File(plugin.getDataFolder(), "schematics");
+            if (!schematicFolder.exists()) schematicFolder.mkdirs();
+
+            // Save schematic inside the schematics folder
+            SchematicProcessor processor = SchematicProcessor.newSchematicProcessor(plugin.getWorldEdit(), arena.getId(), schematicFolder);
             processor.write(player);
 
             Actor actor = BukkitAdapter.adapt(player);

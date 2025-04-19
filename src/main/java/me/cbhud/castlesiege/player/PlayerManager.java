@@ -30,7 +30,6 @@ public class PlayerManager {
     public void setPlayerAsPlaying(Player player) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             player.setGameMode(GameMode.SURVIVAL);
-            player.getInventory().clear();
             player.setHealth(20);
             player.setLevel(0);
             player.getActivePotionEffects().clear();

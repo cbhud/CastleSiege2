@@ -38,7 +38,6 @@ public class PlayerManager {
     }
 
     public void setPlayerAsLobby(Player player) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
             player.setGameMode(GameMode.ADVENTURE);
             player.getInventory().clear();
             player.setHealth(20);
@@ -49,21 +48,18 @@ public class PlayerManager {
                     .lore(Component.text("§7Right-click to select arena")).build());
             playerStates.put(player, IN_LOBBY);
 
-            // Teleport synchronously
             player.teleport(plugin.getSlc().getLobbySpawn());
 
-            // Scoreboard updates can be async for better performance
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> plugin.getScoreboardManager().setupScoreboard(player));
-        });
+            plugin.getScoreboardManager().setupScoreboard(player);
     }
 
     public void setPlayerAsWaiting(Player player) {
+        player.setGameMode(GameMode.SURVIVAL);
+        player.getInventory().clear();
+        player.setHealth(20);
+        player.setLevel(0);
+        player.getActivePotionEffects().clear();
         Bukkit.getScheduler().runTask(plugin, () -> {
-            player.setGameMode(GameMode.SURVIVAL);
-            player.getInventory().clear();
-            player.setHealth(20);
-            player.setLevel(0);
-            player.getActivePotionEffects().clear();
             player.getInventory().setItem(3, ItemBuilder.from(Material.CLOCK)
                     .name(Component.text("§eSelect Team"))
                     .lore(Component.text("§7Right-click to select team"))
@@ -79,9 +75,8 @@ public class PlayerManager {
                     .build());
             playerStates.put(player, WAITING);
 
-            // Scoreboard update async
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> plugin.getScoreboardManager().updateScoreboard(player, "pre-game"));
         });
+        plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
     }
 
     public void setPlayerAsSpectating(Player player) {

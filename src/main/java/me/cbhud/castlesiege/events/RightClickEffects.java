@@ -3,7 +3,7 @@ package me.cbhud.castlesiege.events;
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.arena.Arena;
 import me.cbhud.castlesiege.arena.ArenaState;
-import me.cbhud.castlesiege.kits.ItemManager;
+import me.cbhud.castlesiege.kit.ItemManager;
 import me.cbhud.castlesiege.team.Team;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

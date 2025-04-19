@@ -1,4 +1,4 @@
-package me.cbhud.castlesiege.kits;
+package me.cbhud.castlesiege.kit;
 
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.team.Team;

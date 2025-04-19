@@ -121,11 +121,11 @@ public class Arena {
         }
         players.add(player);
         player.teleport(getLobbySpawn());
-        plugin.getPlayerManager().setPlayerAsWaiting(player);
 
         if (players.size() >= getMin()) {
             startAutoStart(autoStart);
         }
+        plugin.getPlayerManager().setPlayerAsWaiting(player);
 
         return true;
     }

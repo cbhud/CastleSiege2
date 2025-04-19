@@ -1,4 +1,4 @@
-package me.cbhud.castlesiege.kits;
+package me.cbhud.castlesiege.kit;
 
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import net.kyori.adventure.text.Component;

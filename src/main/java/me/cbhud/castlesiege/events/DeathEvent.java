@@ -37,7 +37,7 @@ public class DeathEvent implements Listener {
                 player.spigot().respawn();
                 player.teleport(plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeamSpawn(team));
                 plugin.getPlayerManager().setPlayerAsPlaying(player);
-                //plugin.getPlayerKitManager().giveKit(player, plugin.getPlayerKitManager().getSelectedKit(player));
+                plugin.getPlayerKitManager().giveKit(player, plugin.getPlayerKitManager().getSelectedKit(player));
             }, 5 * 20); // 5 seconds
 
     }

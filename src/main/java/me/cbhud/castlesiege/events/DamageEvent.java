@@ -1,9 +1,11 @@
 //kit icon
-//auto select default kit for team on random join
-//nakon smrti give kit opet
-//team damage team
+//auto select default kit for team on random join treba oko skorborda proverit ne pise na sc
+//nakon smrti give kit opet ++
+//team damage team treba test
 //proveri sta se desava sa joinom i itemima i stateom playera na join
-
+//kit logika na promjenu tima i join da setupa scoreboard malo kasnije
+//logika za set default kit nije dobra za oba tima daje isti kit jer je prvi
+//
 
 package me.cbhud.castlesiege.events;
 
@@ -54,7 +56,7 @@ public class DamageEvent implements Listener {
         Team damagedPlayerTeam = plugin.getArenaManager().getArenaByPlayer(damagedPlayer.getUniqueId()).getTeam(damagedPlayer);
         Team damagerTeam = plugin.getArenaManager().getArenaByPlayer(damager.getUniqueId()).getTeam(damager);
 
-        if (damagedPlayerTeam != null && damagedPlayerTeam.equals(damagerTeam)) {
+        if (damagedPlayerTeam != null && damagedPlayerTeam == damagerTeam) {
             event.setCancelled(true);
         }
     }

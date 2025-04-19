@@ -41,7 +41,7 @@ public class TeamManager {
         // Assign player to new team
         playerTeams.put(player.getUniqueId().toString(), newTeam);
         updateTeamCount(newTeam, 1); // Increase the count of the new team
-
+        plugin.getPlayerKitManager().setDefaultKit(player);
         plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
 
         return true;

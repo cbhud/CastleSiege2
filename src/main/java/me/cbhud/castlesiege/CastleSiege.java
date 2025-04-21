@@ -6,10 +6,7 @@ import me.cbhud.castlesiege.arena.ArenaManager;
 import me.cbhud.castlesiege.cmds.CreateArenaCommand;
 import me.cbhud.castlesiege.cmds.LeaveArenaCommand;
 import me.cbhud.castlesiege.cmds.SetLobbyCommand;
-import me.cbhud.castlesiege.events.DeathEvent;
-import me.cbhud.castlesiege.events.JoinEvent;
-import me.cbhud.castlesiege.events.MiscEvents;
-import me.cbhud.castlesiege.events.RightClickEffects;
+import me.cbhud.castlesiege.events.*;
 import me.cbhud.castlesiege.gui.ArenaSelector;
 import me.cbhud.castlesiege.gui.KitSelector;
 import me.cbhud.castlesiege.gui.TeamSelector;
@@ -73,6 +70,7 @@ public final class CastleSiege extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new JoinEvent(this), this);
         getServer().getPluginManager().registerEvents(new DeathEvent(this), this);
         getServer().getPluginManager().registerEvents(new RightClickEffects(this), this);
+        getServer().getPluginManager().registerEvents(new DamageEvent(this), this);
         teamManager = new TeamManager(this, this.getConfig());
         mobManager = new MobManager(this);
 

@@ -33,10 +33,16 @@ public class DamageEvent implements Listener {
 
         Player damagedPlayer = (Player) event.getEntity();
 
-        if (plugin.getPlayerManager().getPlayerState(damagedPlayer) != PlayerState.PLAYING && plugin.getArenaManager().getArenaByPlayer(damagedPlayer.getUniqueId()).getState() != ArenaState.IN_GAME) {
+        if (plugin.getPlayerManager().getPlayerState(damagedPlayer) != PlayerState.PLAYING ) {
             event.setCancelled(true);
             return;
         }
+
+        if (plugin.getArenaManager().getArenaByPlayer(damagedPlayer.getUniqueId()).getState() != ArenaState.IN_GAME) {
+            event.setCancelled(true);
+            return;
+        }
+
 
         if (!(event instanceof EntityDamageByEntityEvent)) return;
 

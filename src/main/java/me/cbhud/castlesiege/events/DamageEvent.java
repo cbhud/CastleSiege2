@@ -10,6 +10,7 @@
 package me.cbhud.castlesiege.events;
 
 import me.cbhud.castlesiege.CastleSiege;
+import me.cbhud.castlesiege.arena.ArenaState;
 import me.cbhud.castlesiege.player.PlayerState;
 import me.cbhud.castlesiege.team.Team;
 import org.bukkit.entity.Player;
@@ -32,7 +33,7 @@ public class DamageEvent implements Listener {
 
         Player damagedPlayer = (Player) event.getEntity();
 
-        if (plugin.getPlayerManager().getPlayerState(damagedPlayer) != PlayerState.PLAYING) {
+        if (plugin.getPlayerManager().getPlayerState(damagedPlayer) != PlayerState.PLAYING && plugin.getArenaManager().getArenaByPlayer(damagedPlayer.getUniqueId()).getState() != ArenaState.IN_GAME) {
             event.setCancelled(true);
             return;
         }

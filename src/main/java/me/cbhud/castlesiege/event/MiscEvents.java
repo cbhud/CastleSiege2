@@ -1,8 +1,7 @@
-package me.cbhud.castlesiege.events;
+package me.cbhud.castlesiege.event;
 
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.player.PlayerState;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

@@ -1,4 +1,4 @@
-package me.cbhud.castlesiege.cmds;
+package me.cbhud.castlesiege.cmd;
 
 import me.cbhud.castlesiege.CastleSiege;
 import org.bukkit.ChatColor;

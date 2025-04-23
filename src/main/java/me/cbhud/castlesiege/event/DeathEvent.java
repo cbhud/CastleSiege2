@@ -1,4 +1,4 @@
-package me.cbhud.castlesiege.events;
+package me.cbhud.castlesiege.event;
 
 import me.cbhud.castlesiege.CastleSiege;
 

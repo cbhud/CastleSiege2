@@ -22,7 +22,7 @@ public class KitSelector {
         this.plugin = plugin;
         this.gui = Gui.gui()
                 .title(Component.text("§eSelect Kit"))
-                .rows(4)
+                .rows(3)
                 .create();
 
         init();
@@ -30,9 +30,12 @@ public class KitSelector {
 
     private void init() {
         KitManager kitManager = plugin.getKitManager();
-        int slot = 0;
+        int slot = 9;
 
         for (KitData kit : kitManager.loadKits()) {
+            if (slot == 13){
+                gui.setItem(slot++, new GuiItem(Material.AIR));
+            }
             ItemStack displayItem = getDisplayItem(kit);
             String priceDisplay = kit.getPrice() <= 0 ? "§aFree" : "§6" + kit.getPrice() + " §ecoins";
 
@@ -53,10 +56,10 @@ public class KitSelector {
     }
 
     private ItemStack getDisplayItem(KitData kit) {
-        if (!kit.getItems().isEmpty()) {
-            return kit.getItems().get(0); // Use first item in kit as icon
+        if (!kit.getKitIcon().isEmpty()) {
+            return new ItemStack(Material.valueOf(kit.getKitIcon()));
         }
-        return new ItemStack(Material.CHEST); // Fallback if kit has no items
+        return new ItemStack(Material.CHEST);
     }
 
     public void open(Player player) {

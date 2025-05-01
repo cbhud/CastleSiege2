@@ -17,6 +17,7 @@ kits:
       - CHAINMAIL_BOOTS
     price: 0
     team: Defenders
+    kitIcon: DIAMOND_SWORD
 
   Spearman:
     kitItems:
@@ -30,6 +31,7 @@ kits:
       - IRON_BOOTS
     price: 30
     team: Defenders
+    kitIcon: DIAMOND_SWORD
 
   Wizard:
     kitItems:
@@ -45,6 +47,8 @@ kits:
       - LEATHER_BOOTS
     price: 45
     team: Defenders
+    kitIcon: DIAMOND_SWORD
+
 
   Knight:
     kitItems:
@@ -56,6 +60,7 @@ kits:
       - IRON_BOOTS
     price: 90
     team: Defenders
+    kitIcon: DIAMOND_SWORD
 
   Berserker:
     kitItems:
@@ -69,6 +74,7 @@ kits:
       - CHAINMAIL_BOOTS
     price: 50
     team: Attackers
+    kitIcon: DIAMOND_SWORD
 
   Skald:
     kitItems:
@@ -84,6 +90,7 @@ kits:
       - LEATHER_BOOTS
     price: 0
     team: Attackers
+    kitIcon: DIAMOND_SWORD
 
   Bombardier:
     kitItems:
@@ -97,6 +104,7 @@ kits:
       - CHAINMAIL_BOOTS
     price: 40
     team: Attackers
+    kitIcon: DIAMOND_SWORD
 
   Warrior:
     kitItems:
@@ -110,3 +118,4 @@ kits:
       - CHAINMAIL_BOOTS
     price: 75
     team: Attackers
+    kitIcon: DIAMOND_SWORD

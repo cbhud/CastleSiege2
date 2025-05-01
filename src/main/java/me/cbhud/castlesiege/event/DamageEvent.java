@@ -1,4 +1,6 @@
 //kit icon??
+
+//teammanager class joinTeam pravi problem oko default kita
 //auto select default kit for team on random join treba oko skorborda proverit ne pise na sc??
 //kit logika na promjenu tima i join da setupa scoreboard malo kasnije ??
 //logika za set default kit nije dobra za oba tima daje isti kit jer je prvi ??

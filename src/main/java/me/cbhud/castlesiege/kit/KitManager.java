@@ -129,7 +129,7 @@ public class KitManager {
 
     public KitData getDefaultKitForTeam(Team team) {
         for (KitData kit : kits) {
-            if (kit.getTeam() == team && Boolean.TRUE.equals(kit.isDefault)) {
+            if (kit.getTeam() == team && kit.isDefault) {
                 return kit;
             }
         }

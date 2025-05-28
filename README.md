@@ -1,7 +1,7 @@
 
 # Castle Siege 2 — The Improved Version of Castle Siege!
 
-![Castle Siege 2](https://imgur.com/undefined)
+![Castle Siege 2](https://imgur.com/d3KxRQF)
 
 Castle Siege 2 is the enhanced and community-driven successor to the original Castle Siege! Built with the needs of players and server owners in mind, it introduces a **simple multi-arena system**, **arena regeneration**, and **full customization** of features.
 

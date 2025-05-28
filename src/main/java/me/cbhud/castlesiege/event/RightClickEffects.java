@@ -18,16 +18,26 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 public class RightClickEffects implements Listener {
 
     private final CastleSiege plugin;
     private final Random rand = new Random();
     private static final int EFFECT_DURATION = 100;
+    private final Map<UUID, Long> attackCooldowns = new HashMap<>();
+    private final Map<UUID, Long> supportCooldowns = new HashMap<>();
+    private long ATTACK_COOLDOWN;
+    private long SUPPORT_COOLDOWN;
 
     public RightClickEffects(CastleSiege plugin) {
+
         this.plugin = plugin;
+        this.ATTACK_COOLDOWN = plugin.getConfigManager().getConfig().getInt("wizardAttackSpellCooldown", 30) * 1000;
+        this.SUPPORT_COOLDOWN = plugin.getConfigManager().getConfig().getInt("wizardSupportSpellCooldown", 30) * 1000;
     }
 
     @EventHandler
@@ -43,7 +53,7 @@ public class RightClickEffects implements Listener {
             return;
         }
 
-        if (clickedItem.getType() == Material.COMPASS) {
+        if (clickedItem.getType() == Material.EMERALD) {
             plugin.getArenaSelector().open(player);
             return;
         }
@@ -54,7 +64,7 @@ public class RightClickEffects implements Listener {
         }
 
         if (clickedItem.getType() == Material.RED_DYE) {
-            player.sendMessage("§cYou have left the arena!");
+            player.sendMessage(plugin.getMsg().getMessage("leaveArena", player).get(0));
             arena.removePlayer(player);
             return;
         }
@@ -64,11 +74,16 @@ public class RightClickEffects implements Listener {
         }
 
         if (useSpecialItem(player, clickedItem, arena.getState())) {
+//            if (clickedItem == ItemManager.attack || clickedItem == ItemManager.support){
+//                return;
+//            }
             removeItem(player, clickedItem, arena.getState());
         }
     }
 
     private boolean useSpecialItem(Player player, ItemStack item, ArenaState arenaState) {
+        UUID uuid = player.getUniqueId();
+        long now = System.currentTimeMillis();
         if (item.getType() == Material.CLOCK && arenaState == ArenaState.WAITING) {
             plugin.getTeamSelector().open(player);
             return true;
@@ -104,26 +119,50 @@ public class RightClickEffects implements Listener {
             return true;
         }
 
+        // ATTACK SPELL WITH COOLDOWN
         if (item.isSimilar(ItemManager.attack)) {
+            long lastUse = attackCooldowns.getOrDefault(uuid, 0L);
+            if (now - lastUse < ATTACK_COOLDOWN) {
+                int seconds = (int) ((ATTACK_COOLDOWN - (now - lastUse)) / 1000);
+                player.sendMessage(ChatColor.RED + "You must wait " + seconds + " seconds before casting attack again.");
+                return false;
+            }
+
+            attackCooldowns.put(uuid, now);
+
             for (Player nearbyPlayer : player.getWorld().getPlayers()) {
                 if (nearbyPlayer.getLocation().distance(player.getLocation()) <= 10 &&
                         plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player) == Team.Attackers) {
                     applyRandomEffect(nearbyPlayer);
-                    player.sendMessage(ChatColor.RED + "Your spell has struck your opponents with powerful magic!");
                 }
             }
-            return true;
+
+            player.sendMessage(plugin.getMsg().getMessage("wizardAttackSpell", player).get(0));
+            return false;
         }
 
+        // SUPPORT SPELL WITH COOLDOWN
         if (item.isSimilar(ItemManager.support)) {
+            long lastUse = supportCooldowns.getOrDefault(uuid, 0L);
+            if (now - lastUse < SUPPORT_COOLDOWN) {
+                int seconds = (int) ((SUPPORT_COOLDOWN - (now - lastUse)) / 1000);
+                String msg = plugin.getMsg().getMessage("wizardCooldown", player).get(0);
+                msg = msg.replace("{seconds}", String.valueOf(seconds));
+                player.sendMessage(msg);
+                return false;
+            }
+
+            supportCooldowns.put(uuid, now);
+
             for (Player nearbyPlayer : player.getWorld().getPlayers()) {
                 if (nearbyPlayer.getLocation().distance(player.getLocation()) <= 10 &&
                         plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player) == Team.Defenders) {
                     applyRandomSupportEffect(nearbyPlayer);
-                    player.sendMessage(ChatColor.GREEN + "You have cast a supportive spell, empowering your nearby allies!");
                 }
             }
-            return true;
+
+            player.sendMessage(plugin.getMsg().getMessage("wizardSupportSpell", player).get(0));
+            return false;
         }
 
         return false;

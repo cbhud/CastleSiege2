@@ -11,6 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +27,7 @@ public class KitManager {
         createKitsFileIfNotExists();
         kits = new ArrayList<>();
         kits = loadKits();
+        syncKitsToDatabase();
     }
 
     // Load kits from kits.yml
@@ -176,7 +181,50 @@ public class KitManager {
 
         public String getKitIcon() {return kitIcon;}
 
+    }
 
+    public void saveOrUpdateKitInDatabase(KitData kit) {
+        try (Connection conn = plugin.getDataManager().getConnection()) {
+            String selectSql = "SELECT id, price FROM kits WHERE name = ?";
+            try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+                selectStmt.setString(1, kit.getName());
+                try (ResultSet rs = selectStmt.executeQuery()) {
+                    if (rs.next()) {
+                        int id = rs.getInt("id");
+                        int currentPrice = rs.getInt("price");
+                        if (currentPrice != kit.getPrice()) {
+                            String updateSql = "UPDATE kits SET price = ? WHERE id = ?";
+                            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                                updateStmt.setInt(1, kit.getPrice());
+                                updateStmt.setInt(2, id);
+                                updateStmt.executeUpdate();
+                                plugin.getLogger().info("Updated kit price for " + kit.getName());
+                            }
+                        } else {
+                            plugin.getLogger().info("Kit " + kit.getName() + " already up to date.");
+                        }
+                    } else {
+                        // Insert new kit
+                        String insertSql = "INSERT INTO kits (name, price) VALUES (?, ?)";
+                        try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                            insertStmt.setString(1, kit.getName());
+                            insertStmt.setInt(2, kit.getPrice());
+                            insertStmt.executeUpdate();
+                            plugin.getLogger().info("Inserted new kit " + kit.getName() + " into DB.");
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error saving kit " + kit.getName() + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void syncKitsToDatabase() {
+        for (KitData kit : kits) {
+            saveOrUpdateKitInDatabase(kit);
+        }
     }
 }
 

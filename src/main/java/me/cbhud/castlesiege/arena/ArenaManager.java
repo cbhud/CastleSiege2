@@ -66,6 +66,31 @@ public class ArenaManager {
         }
     }
 
+    public Location getLocation(Arena arena) {
+        String id = arena.getId();
+        ConfigurationSection arenasSection = config.getConfigurationSection("arenas");
+
+        if (arenasSection == null) {
+            plugin.getLogger().warning("No 'arenas' section found in config!");
+            return null;
+        }
+
+        ConfigurationSection section = arenasSection.getConfigurationSection(id);
+        if (section == null) {
+            plugin.getLogger().warning("Arena with ID '" + id + "' not found in config.");
+            return null;
+        }
+
+        String locationString = section.getString("lobby-spawn");
+        if (locationString == null) {
+            plugin.getLogger().warning("Lobby spawn not set for arena '" + id + "'.");
+            return null;
+        }
+
+        return parseLocation(locationString);
+    }
+
+
     private Location parseLocation(String locString) {
         if (locString == null || locString.isEmpty()) return null;
         String[] parts = locString.split(",");
@@ -144,7 +169,7 @@ public class ArenaManager {
             }
 
             ConfigurationSection section = arenasSection.createSection(arena.getId());
-            section.set("lobby-spawn", formatLocation(arena.getLobbySpawn()));
+            section.set("lobby-spawn", formatLocation(arena.getLSpawn()));
             section.set("king-spawn", formatLocation(arena.getKingSpawn()));
             section.set("defenders-spawn", formatLocation(arena.getDefendersSpawn()));
             section.set("attackers-spawn", formatLocation(arena.getAttackersSpawn()));

@@ -1,112 +1,52 @@
 package me.cbhud.castlesiege.kit;
 
 import dev.triumphteam.gui.builder.item.ItemBuilder;
+import me.cbhud.castlesiege.CastleSiege;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemManager {
 
-    public static ItemStack axe;
-    public static ItemStack stew;
-    public static ItemStack rage;
-    public static ItemStack ragnarok;
-    public static ItemStack sight;
-    public static ItemStack harm;
-    public static ItemStack sword;
-    public static ItemStack attack;
-    public static ItemStack support;
-    public static ItemStack spear;
+    private final CastleSiege plugin;
 
-    public ItemManager() {
+    public static ItemStack axe, stew, rage, ragnarok, sight, harm, sword, attack, support, spear;
+
+    public ItemManager(CastleSiege plugin) {
+        this.plugin = plugin;
         initItems();
     }
 
     private void initItems() {
-        createAxe();
-        createSpear();
-        createStew();
-        createRage();
-        createRagnarok();
-        createSight();
-        createHarm();
-        createSword();
-        createAttackWand();
-        createSupportWand();
+        createItem("axe", Material.IRON_AXE, item -> axe = item);
+        createItem("spear", Material.TRIDENT, item -> {
+            item.addUnsafeEnchantment(Enchantment.LOYALTY, 1);
+            spear = item;
+        });
+        createItem("stew", Material.MUSHROOM_STEW, item -> stew = item);
+        createItem("rage", Material.NETHER_WART, item -> rage = item);
+        createItem("ragnarok", Material.MAGMA_CREAM, item -> ragnarok = item);
+        createItem("sight", Material.FERMENTED_SPIDER_EYE, item -> sight = item);
+        createItem("harm", Material.TIPPED_ARROW, item -> harm = item);
+        createItem("sword", Material.STONE_SWORD, item -> sword = item);
+        createItem("attack", Material.BLAZE_ROD, item -> attack = item);
+        createItem("support", Material.STICK, item -> support = item);
     }
 
-    private void createAxe() {
-        axe = ItemBuilder.from(Material.IRON_AXE)
-                .name(Component.text("§cThrowable Axe"))
-                .lore(Component.text("§7Right-click to throw"))
-                .build();
+    private void createItem(String key, Material material, java.util.function.Consumer<ItemStack> consumer) {
+        String name = plugin.getMsg().getItemMessage("items." + key + ".name");
+        java.util.List<String> loreLines = plugin.getMsg().getItemMessages("items." + key + ".lore");
+
+        ItemBuilder builder = ItemBuilder.from(material)
+                .name(Component.text(name))
+                .flags(ItemFlag.HIDE_ATTRIBUTES);
+
+        for (String line : loreLines) {
+            builder.lore(Component.text(line));
+        }
+
+        consumer.accept(builder.build());
     }
-
-    private void createSpear() {
-        spear = ItemBuilder.from(Material.TRIDENT)
-                .name(Component.text("§cThrowable Spear"))
-                .lore(Component.text("§7Right-click to throw"))
-                .enchant(Enchantment.LOYALTY, 1)
-                .build();
-    }
-
-    private void createStew() {
-        stew = ItemBuilder.from(Material.MUSHROOM_STEW)
-                .name(Component.text("§dMagic Stew"))
-                .lore(Component.text("§7Regenerates for 5 seconds"))
-                .build();
-    }
-
-    private void createRage() {
-        rage = ItemBuilder.from(Material.RED_DYE)
-                .name(Component.text("§cBerserker's Rage"))
-                .lore(Component.text("§7Gives special berserker effects"))
-                .build();
-    }
-
-    private void createRagnarok() {
-        ragnarok = ItemBuilder.from(Material.MAGMA_CREAM)
-                .name(Component.text("§4Ragnarok"))
-                .lore(Component.text("§7Strength and resistance but slowness"))
-                .build();
-    }
-
-    private void createSight() {
-        sight = ItemBuilder.from(Material.FERMENTED_SPIDER_EYE)
-                .name(Component.text("§eSkald's Sight"))
-                .lore(Component.text("§7Gives special Skald effects"))
-                .build();
-    }
-
-    private void createHarm() {
-        harm = ItemBuilder.from(Material.TIPPED_ARROW)
-                .name(Component.text("§eDamage Arrow"))
-                .lore(Component.text("§7Special effects when used"))
-                .build();
-    }
-
-    private void createSword() {
-        sword = ItemBuilder.from(Material.STONE_SWORD)
-                .name(Component.text("§dMystic Sword"))
-                .lore(Component.text("§70.06% chance to poison on damage"))
-                .build();
-    }
-
-    private void createAttackWand() {
-        attack = ItemBuilder.from(Material.BLAZE_ROD)
-                .name(Component.text("§cAttack Wand"))
-                .lore(Component.text("§7Cast mysterious spells on opponents!"))
-                .build();
-    }
-
-    private void createSupportWand() {
-        support = ItemBuilder.from(Material.STICK)
-                .name(Component.text("§aSupport Wand"))
-                .lore(Component.text("§7Cast mysterious spells to help teammates!"))
-                .build();
-    }
-
-
-
 }

@@ -2,7 +2,6 @@ package me.cbhud.castlesiege.kit;
 
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.team.Team;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -28,39 +27,48 @@ public class PlayerKitManager {
 
     public void giveKit(Player player, KitManager.KitData kit) {
         player.getInventory().clear();
-        Bukkit.broadcastMessage("evo sad dajem kit playeru!");
-        Bukkit.broadcastMessage(kit.getName() + " sad dajem kit playeru!");
         for (ItemStack item : kit.getItems()) {
             player.getInventory().addItem(item);
-            Bukkit.broadcastMessage("evo dajem mu item po item!");
         }
 
         equipArmor(player, kit.getItems());
         selectedKits.put(player, kit);
     }
 
-    public boolean selectKit(Player player, String kitName) {
-        KitManager.KitData kit = plugin.getKitManager().getKitByName(kitName);
+    public boolean selectKit(Player player, KitManager.KitData kit) {
         if (kit == null) {
             player.sendMessage("§cKit not found.");
             return false;
         }
 
         if (kit.getTeam() != plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player)) {
-            player.sendMessage("§cYou cannot select a kit from the opposing team!");
+            player.sendMessage(plugin.getMsg().getMessage("opposingTeamKit", player).get(0));
             return false;
         }
 
-//        if (plugin.getDbConnection().checkPlayerKit(player.getUniqueId(), kit.getName())) {
+        if (kit.getPrice() == 0) {
             selectedKits.put(player, kit);
             plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
-            player.sendMessage("§aYou have selected the " + kit.getName() + " kit!");
+            String msg = plugin.getMsg().getMessage("selectedKit", player).get(0);
+            msg = msg.replace("{kit}", kit.getName());
+            player.sendMessage(msg);
             return true;
-//        } else {
-//            player.sendMessage("§cYou do not have this kit unlocked. Right-click to purchase it.");
-//            return false;
-//        }
+        }
+
+        if (plugin.getDataManager().hasPlayerKit(player.getUniqueId(), kit.getName())) {
+                selectedKits.put(player, kit);
+                plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
+                String msg = plugin.getMsg().getMessage("selectedKit", player).get(0);
+                msg = msg.replace("{kit}", kit.getName());
+                player.sendMessage(msg);                return true;
+            }
+        else{
+            player.sendMessage(plugin.getMsg().getMessage("lockedKit", player).get(0));
+            return false;
+        }
+
     }
+
 
     public KitManager.KitData getSelectedKit(Player player) {
         return selectedKits.get(player);
@@ -110,7 +118,7 @@ public class PlayerKitManager {
         KitManager.KitData defaultKit = plugin.getKitManager().getDefaultKitForTeam(playerTeam);
 
         if (defaultKit == null) {
-            player.sendMessage("§cDefault kit not found for your team.");
+            player.sendMessage("§cDefault kit not found for your team contact admin!.");
             return;
         }
 

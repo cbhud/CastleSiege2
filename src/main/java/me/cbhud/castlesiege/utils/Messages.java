@@ -30,6 +30,16 @@ public class Messages {
         config = YamlConfiguration.loadConfiguration(configFile);
     }
 
+    public List<String> getGuiMessage(String key) {
+        if (!config.contains(key)) {
+            return List.of(ChatColor.RED + "Message not found: " + key);
+        }
+
+        return config.getStringList(key).stream()
+                .map(message -> ChatColor.translateAlternateColorCodes('&',message))
+                .collect(Collectors.toList());
+    }
+
     public List<String> getMessage(String key, Player player) {
         if (!config.contains(key)) {
             return List.of(ChatColor.RED + "Message not found: " + key);
@@ -45,6 +55,15 @@ public class Messages {
             return PlaceholderAPI.setPlaceholders(player, message);
         }
         return message;
+    }
+
+    public String getItemMessage(String path) {
+        return config.getString(path, "");
+    }
+
+    // Gets a list of strings (lore lines) for the given path, returns empty list if missing
+    public List<String> getItemMessages(String path) {
+        return config.getStringList(path);
     }
 
     public void reloadConfig() {

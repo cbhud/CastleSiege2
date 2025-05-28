@@ -24,7 +24,7 @@ public class ArenaSelector {
         this.plugin = plugin;
         this.arenaManager = plugin.getArenaManager();
         gui = Gui.gui()
-                .title(Component.text("§eSelect Arena"))
+                .title(Component.text(plugin.getMsg().getGuiMessage("select-arena-in-gui").get(0)))
                 .rows(4)
                 .create();
     }
@@ -42,33 +42,39 @@ public class ArenaSelector {
                 case IN_GAME:
                     woolMaterial = Material.GREEN_WOOL;
                     statusColor = ChatColor.GREEN;
-                    status = "§aIn Game";
+
+                    status = plugin.getMsg().getGuiMessage("in-game-status").get(0);
                     break;
                 case WAITING:
                     woolMaterial = Material.LIME_WOOL;
                     statusColor = ChatColor.YELLOW;
-                    status = "§eWaiting for players...";
+
+                    status = plugin.getMsg().getGuiMessage("waiting-status").get(0);
                     break;
                 case ENDED:
                     woolMaterial = Material.RED_WOOL;
                     statusColor = ChatColor.DARK_RED;
-                    status = "§4Restarting...";
+                    status = plugin.getMsg().getGuiMessage("restarting-status").get(0);
                     break;
                 default:
                     woolMaterial = Material.WHITE_WOOL;
                     statusColor = ChatColor.GRAY;
-                    status = "§7Unknown";
+                    status = plugin.getMsg().getGuiMessage("unknown-status").get(0);
                     break;
             }
 
+            String msg1 = plugin.getMsg().getGuiMessage("arena-hover-gui").get(1);
+            msg1 = msg1.replace("{players}", String.valueOf(arena.getNoPlayers()));
+            String msg2 = plugin.getMsg().getGuiMessage("arena-hover-gui").get(2);
+            msg2 = msg2.replace("{status}", status);
             GuiItem arenaItem = ItemBuilder.from(woolMaterial)
                     .name(Component.text(statusColor + arena.getId()))
                     .lore(
-                            Component.text(""),
-                            Component.text("§bPlayers: §e" + arena.getNoPlayers()),
-                            Component.text("§bStatus: " + status),
-                            Component.text(""),
-                            Component.text("§7Click to join!")
+                            Component.text(plugin.getMsg().getGuiMessage("arena-hover-gui").get(0)),
+                            Component.text(msg1),
+                            Component.text(msg2),
+                            Component.text(plugin.getMsg().getGuiMessage("arena-hover-gui").get(3)),
+                            Component.text(plugin.getMsg().getGuiMessage("arena-hover-gui").get(4))
                     )
                     .asGuiItem(event -> handleArenaSelection(event, arena));
 

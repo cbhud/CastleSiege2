@@ -19,6 +19,7 @@ kits:
     team: Defenders
     kitIcon: DIAMOND_SWORD
 
+
   Spearman:
     kitItems:
       - IRON_SWORD
@@ -31,6 +32,7 @@ kits:
       - IRON_BOOTS
     price: 30
     team: Defenders
+    default: true
     kitIcon: DIAMOND_SWORD
 
   Wizard:
@@ -62,20 +64,6 @@ kits:
     team: Defenders
     kitIcon: DIAMOND_SWORD
 
-  Berserker:
-    kitItems:
-      - IRON_AXE
-      - CUSTOM_ITEM:axe
-      - CUSTOM_ITEM:rage
-      - CUSTOM_ITEM:stew
-      - CHAINMAIL_HELMET
-      - CHAINMAIL_CHESTPLATE
-      - CHAINMAIL_LEGGINGS
-      - CHAINMAIL_BOOTS
-    price: 50
-    team: Attackers
-    kitIcon: DIAMOND_SWORD
-
   Skald:
     kitItems:
       - STONE_SWORD
@@ -89,6 +77,21 @@ kits:
       - LEATHER_LEGGINGS
       - LEATHER_BOOTS
     price: 0
+    team: Attackers
+    default: true
+    kitIcon: DIAMOND_SWORD
+
+  Berserker:
+    kitItems:
+      - IRON_AXE
+      - CUSTOM_ITEM:axe
+      - CUSTOM_ITEM:rage
+      - CUSTOM_ITEM:stew
+      - CHAINMAIL_HELMET
+      - CHAINMAIL_CHESTPLATE
+      - CHAINMAIL_LEGGINGS
+      - CHAINMAIL_BOOTS
+    price: 50
     team: Attackers
     kitIcon: DIAMOND_SWORD
 

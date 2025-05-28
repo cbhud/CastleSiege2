@@ -34,6 +34,8 @@ public class JoinEvent implements Listener {
 
         plugin.getPlayerManager().setPlayerAsLobby(p);
 
+        plugin.getDataManager().createProfile(e.getPlayer().getUniqueId(), e.getPlayer().getName());
+
     }
 
 

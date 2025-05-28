@@ -53,6 +53,16 @@ public class CustomPlaceholder extends PlaceholderExpansion {
         switch (identifier.toLowerCase()) {
             case "timer":
                 return String.valueOf(getTimer(player)); // Example: %castlesiege_timer%
+            case "starting-in":
+                return String.valueOf(getStartingIn(player)); // Example: %castlesiege_timer%
+            case "kills":
+                return String.valueOf(getPlayerKills(player));
+            case "wins":
+                return String.valueOf(getPlayerWins(player));
+            case "deaths":
+                return String.valueOf(getPlayerDeaths(player));
+            case "coins":
+                return String.valueOf(getPlayerCoins(player));
             case "king":
                 return String.valueOf(getKingHealth(player)); // Example: %castlesiege_timer%
             case "team":
@@ -81,6 +91,10 @@ public class CustomPlaceholder extends PlaceholderExpansion {
             default:
                 return null; // Unknown placeholder
         }
+    }
+
+    private int getStartingIn(Player player) {
+        return  plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getAutoStartTimer();
     }
 
     private int getTimer(Player player) {
@@ -123,5 +137,17 @@ public class CustomPlaceholder extends PlaceholderExpansion {
 
     private String getPlayerTeam(Player player) {
         return plugin.getConfigManager().getTeamName(plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player));
+    }
+    private int getPlayerKills(Player player){
+        return plugin.getDataManager().getPlayerKills(player.getUniqueId());
+    }
+    private int getPlayerCoins(Player player){
+        return plugin.getDataManager().getPlayerCoins(player.getUniqueId());
+    }
+    private int getPlayerWins(Player player){
+        return plugin.getDataManager().getPlayerWins(player.getUniqueId());
+    }
+    private int getPlayerDeaths(Player player){
+        return plugin.getDataManager().getPlayerDeaths(player.getUniqueId());
     }
 }

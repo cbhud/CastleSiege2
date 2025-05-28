@@ -4,7 +4,8 @@ lobby:
     - ""
     - "&eOnline: %server_online%"
     - "&aCoins: %cs_coins%"
-    - "&cKills: %cs_kills%"
+    - "&6Kills: %cs_kills%"
+    - "&cDeaths: %cs_deaths%"
     - ""
     - "&6IP: castlesiege.me"
 
@@ -25,8 +26,8 @@ in-game:
     - ""
     - "&eTime Remaining: %cs_timer%"
     - "&cKing's Health: %cs_king%"
-    - "&aDefenders: %cs_defenders_size%"
-    - "&bAttackers: %cs_attackers_size%"
+    - "&a%cs_defenders%: %cs_defenders_size%"
+    - "&b%cs_attackers%: %cs_attackers_size%"
     - ""
     - "&6IP: castlesiege.me"
 

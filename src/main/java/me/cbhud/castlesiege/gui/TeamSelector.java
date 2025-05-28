@@ -19,7 +19,7 @@ public class TeamSelector {
     public TeamSelector(CastleSiege plugin) {
         this.plugin = plugin;
         gui = Gui.gui()
-                .title(Component.text("§eSelect Team"))
+                .title(Component.text(plugin.getMsg().getGuiMessage("teamgui").get(0)))
                 .rows(1)
                 .create();
 
@@ -30,13 +30,13 @@ public class TeamSelector {
         GuiItem vikingTeamItem = ItemBuilder.from(Material.RED_STAINED_GLASS_PANE)
                 .name(Component.text(ChatColor.RED + plugin.getConfigManager().getAttacker()))
                 .lore(
-                        Component.text("§eAssassinate the king and conquer the castle"))
+                        Component.text(plugin.getMsg().getGuiMessage("team-selector-attackers").get(0)))
                 .asGuiItem(event -> handleTeamSelection(event, Team.Attackers));
 
         GuiItem franksTeamItem = ItemBuilder.from(Material.CYAN_STAINED_GLASS_PANE)
                 .name(Component.text(ChatColor.AQUA + plugin.getConfigManager().getDefender()))
                 .lore(
-                        Component.text("§eDefend the castle and king"))
+                        Component.text(plugin.getMsg().getGuiMessage("team-selector-defenders").get(0)))
                 .asGuiItem(event -> handleTeamSelection(event, Team.Defenders));
 
         gui.setItem(3, franksTeamItem);

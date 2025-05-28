@@ -3,6 +3,7 @@ package me.cbhud.castlesiege;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import io.github.regenerato.Regenerato;
 import me.cbhud.castlesiege.arena.ArenaManager;
+import me.cbhud.castlesiege.cmd.CoinsCommand;
 import me.cbhud.castlesiege.cmd.CreateArenaCommand;
 import me.cbhud.castlesiege.cmd.LeaveArenaCommand;
 import me.cbhud.castlesiege.cmd.SetLobbyCommand;
@@ -16,10 +17,7 @@ import me.cbhud.castlesiege.kit.PlayerKitManager;
 import me.cbhud.castlesiege.player.PlayerManager;
 import me.cbhud.castlesiege.scoreboard.ScoreboardManager;
 import me.cbhud.castlesiege.team.TeamManager;
-import me.cbhud.castlesiege.utils.ConfigManager;
-import me.cbhud.castlesiege.utils.CustomPlaceholder;
-import me.cbhud.castlesiege.utils.Messages;
-import me.cbhud.castlesiege.utils.MobManager;
+import me.cbhud.castlesiege.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -45,6 +43,7 @@ public final class CastleSiege extends JavaPlugin {
     PlayerKitManager playerKitManager;
     KitSelector kitSelector;
     ItemManager itemManager;
+    DataManager dataManager;
 
     @Override
     public void onEnable() {
@@ -53,17 +52,17 @@ public final class CastleSiege extends JavaPlugin {
             new CustomPlaceholder(this).register();
         }
         configManager = new ConfigManager(this);
+        msg = new Messages(this);
         arenaManager = new ArenaManager(this);
         regenerato = (Regenerato) Bukkit.getPluginManager().getPlugin("Regenerato");
         worldEdit = (WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit");
         if (regenerato == null || worldEdit == null) {
-            getLogger().severe("Regenerato or WorldEdit plugin not found! Disabling plugin.");
+            getLogger().severe("Regenerato or FAWE plugin not found! Disabling plugin.");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
-        getCommand("cs").setExecutor(new CreateArenaCommand(this, arenaManager));
+        getCommand("arena").setExecutor(new CreateArenaCommand(this, arenaManager));
         arenaSelector = new ArenaSelector(this);
-        msg = new Messages(this);
         teamSelector = new TeamSelector(this);
         getCommand("leave").setExecutor(new LeaveArenaCommand(this));
         getCommand("setlobby").setExecutor(slc = new SetLobbyCommand(this));
@@ -79,15 +78,18 @@ public final class CastleSiege extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MiscEvents(this), this);
 
 
-        itemManager = new ItemManager();
+        itemManager = new ItemManager(this);
+        dataManager = new DataManager(this);
         kitManager = new KitManager(this);
         playerKitManager = new PlayerKitManager(this);
         kitSelector = new KitSelector(this);
+        getCommand("coins").setExecutor(new CoinsCommand(this));
+        getServer().getPluginManager().registerEvents(new TNTThrower(this), this);
     }
 
     @Override
     public void onDisable() {
-
+        getDataManager().disconnect();
     }
 
     public MobManager getMobManager() {
@@ -144,4 +146,7 @@ public final class CastleSiege extends JavaPlugin {
         return kitSelector;
     }
 
+    public DataManager getDataManager() {
+        return dataManager;
+    }
 }

@@ -73,8 +73,6 @@ public class TeamManager {
         if (attackers >= maxPlayersPerTeam && defenders >= maxPlayersPerTeam) {
             return false; // Both teams are full
         }
-
-        Bukkit.broadcastMessage("Trying random team join!");
         Random random = new Random();
         Team[] teams = {Team.Attackers, Team.Defenders};
 

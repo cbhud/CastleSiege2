@@ -43,12 +43,17 @@ public class PlayerManager {
             player.setHealth(20);
             player.setLevel(0);
             player.getActivePotionEffects().clear();
-            player.getInventory().setItem(4, ItemBuilder.from(Material.COMPASS)
-                    .name(Component.text("§aSelect Arena"))
-                    .lore(Component.text("§7Right-click to select arena")).build());
+            player.getInventory().setItem(4, ItemBuilder.from(Material.EMERALD)
+                    .name(Component.text(plugin.getMsg().getMessage("selectArenaItem", player).get(0)))
+                    .lore(Component.text(plugin.getMsg().getMessage("selectArenaItem", player).get(1))).build());
             playerStates.put(player, IN_LOBBY);
 
+            if (plugin.getSlc().getLobbySpawn() == null){
+                Bukkit.broadcastMessage("§cThe Main lobby spawn has not been set, please set it or notify the admin");
+                Bukkit.broadcastMessage("§cCommand: /setlobby");
+            }else {
             player.teleport(plugin.getSlc().getLobbySpawn());
+            }
 
             plugin.getScoreboardManager().setupScoreboard(player);
     }
@@ -61,17 +66,17 @@ public class PlayerManager {
         player.getActivePotionEffects().clear();
         Bukkit.getScheduler().runTask(plugin, () -> {
             player.getInventory().setItem(3, ItemBuilder.from(Material.CLOCK)
-                    .name(Component.text("§eSelect Team"))
-                    .lore(Component.text("§7Right-click to select team"))
+                    .name(Component.text(plugin.getMsg().getMessage("selectTeamItem", player).get(0)))
+                    .lore(Component.text(plugin.getMsg().getMessage("selectTeamItem", player).get(1)))
                     .build());
             player.getInventory().setItem(5, ItemBuilder.from(Material.NETHER_STAR)
-                    .name(Component.text("§eSelect Kit"))
-                    .lore(Component.text("§7Right-click to select the kit"))
+                    .name(Component.text(plugin.getMsg().getMessage("selectKitItem", player).get(0)))
+                    .lore(Component.text(plugin.getMsg().getMessage("selectKitItem", player).get(1)))
                     .build());
             playerStates.put(player, WAITING);
             player.getInventory().setItem(8, ItemBuilder.from(Material.RED_DYE)
-                    .name(Component.text("§cLeave Arena"))
-                    .lore(Component.text("§7Right-click to leave arena"))
+                    .name(Component.text(plugin.getMsg().getMessage("leaveArenaItem", player).get(0)))
+                    .lore(Component.text(plugin.getMsg().getMessage("leaveArenaItem", player).get(0)))
                     .build());
             playerStates.put(player, WAITING);
 

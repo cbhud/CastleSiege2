@@ -128,7 +128,6 @@ public class MobManager implements Listener {
         final Player player = event.getEntity().getKiller();
         if (event.getEntity().getCustomName() != null && event.getEntity().getCustomName().contains("King") && event.getEntity() instanceof Zombie) {
             event.getDrops().clear();
-
             plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).endGame();
         }
     }

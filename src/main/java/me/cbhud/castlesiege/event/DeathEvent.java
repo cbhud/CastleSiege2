@@ -5,7 +5,6 @@ import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.player.PlayerState;
 import me.cbhud.castlesiege.team.Team;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,9 +27,13 @@ public class DeathEvent implements Listener {
 
             event.getDrops().clear();
 
-            player.sendTitle(ChatColor.RED + "You died!", ChatColor.GRAY + "Respawning in... 5 seconds", 10, 70, 20);
+        player.sendTitle(plugin.getMsg().getMessage("respawnTitle", player).get(0), plugin.getMsg().getMessage("respawnTitle", player).get(1), 10, 70, 20);
             plugin.getPlayerManager().setPlayerAsSpectating(player);
-
+            plugin.getDataManager().incrementDeaths(player.getUniqueId());
+            if(event.getEntity().getKiller() != null) {
+                plugin.getDataManager().addPlayerCoins(event.getEntity().getKiller().getUniqueId(), plugin.getConfigManager().getCoinsOnKill());
+                plugin.getDataManager().incrementKills(event.getEntity().getKiller().getUniqueId(), 1);
+            }
             Team team = plugin.getArenaManager().getArenaByPlayer(player.getUniqueId()).getTeam(player);
 
             Bukkit.getScheduler().runTaskLater(plugin, () -> {

@@ -17,7 +17,7 @@ public class CreateArenaCommand implements CommandExecutor {
     private final CastleSiege plugin;
     private final ArenaManager arenaManager;
     private final HashMap<String, Arena> arenaSetup = new HashMap<>();
-    private final HashMap<UUID, String> playerSetup = new HashMap<>(); // Tracks which player is setting up which arena
+    private final HashMap<UUID, String> playerSetup = new HashMap<>();
 
     public CreateArenaCommand(CastleSiege plugin, ArenaManager arenaManager) {
         this.plugin = plugin;
@@ -32,28 +32,28 @@ public class CreateArenaCommand implements CommandExecutor {
         }
         Player player = (Player) sender;
 
-        if (args.length < 2 || !args[0].equalsIgnoreCase("arena")) {
-            player.sendMessage("Usage: /cs arena <create/setlobby/setking/setdefenders/setattackers/finish>");
+        if (args.length < 1) {
+            player.sendMessage("§cUsage: /arena <create/setlobby/setking/setdefenders/setattackers/finish>");
             return true;
         }
 
-        String subCommand = args[1].toLowerCase();
+        String subCommand = args[0].toLowerCase();
         switch (subCommand) {
             case "create":
-                if (args.length < 3) {
-                    player.sendMessage("§cUsage: /cs arena create <arenaName>");
+                if (args.length < 2) {
+                    player.sendMessage("§cUsage: /arena create <arenaName>");
                     return true;
                 }
-                String arenaName = args[2];
+                String arenaName = args[1];
                 if (arenaSetup.containsKey(arenaName)) {
                     player.sendMessage("§cThis arena is already being set up.");
                     return true;
                 }
                 arenaSetup.put(arenaName, new Arena(plugin, arenaName, null, null, null, null, 16, 4, 60, 300, player.getWorld().getName()));
-                playerSetup.put(player.getUniqueId(), arenaName); // Assign player to this arena
+                playerSetup.put(player.getUniqueId(), arenaName);
                 player.sendMessage("§aArena setup started! Now set the locations:");
-                player.sendMessage("§a/cs arena setlobby, /cs arena setking");
-                player.sendMessage("§a/cs arena setdefenders, /cs arena setattackers");
+                player.sendMessage("§a/arena setlobby, /arena setking");
+                player.sendMessage("§a/arena setdefenders, /arena setattackers");
                 break;
 
             case "setlobby":
@@ -73,12 +73,12 @@ public class CreateArenaCommand implements CommandExecutor {
                 break;
             default:
                 player.sendMessage("§cUnknown subcommand");
-                player.sendMessage("§cUsage: /cs arena <create/setlobby/setking/setdefenders/setattackers/finish>");
+                player.sendMessage("§cUsage: /arena <create/setlobby/setking/setdefenders/setattackers/finish>");
         }
         return true;
     }
 
-    public void setLocation(Player player, String type) {
+    private void setLocation(Player player, String type) {
         Arena arena = getPlayerArena(player);
         if (arena == null) return;
 
@@ -107,7 +107,11 @@ public class CreateArenaCommand implements CommandExecutor {
         Arena arena = getPlayerArena(player);
         if (arena == null) return;
 
-        if (arena.getLobbySpawn() != null && arena.getKingSpawn() != null && arena.getDefendersSpawn() != null && arena.getAttackersSpawn() != null) {
+        if (arena.getLSpawn() != null &&
+                arena.getKingSpawn() != null &&
+                arena.getDefendersSpawn() != null &&
+                arena.getAttackersSpawn() != null) {
+
             arenaManager.addArena(arena, player);
             arenaSetup.remove(arena.getId());
             playerSetup.remove(player.getUniqueId());
@@ -120,7 +124,7 @@ public class CreateArenaCommand implements CommandExecutor {
     private Arena getPlayerArena(Player player) {
         String arenaName = playerSetup.get(player.getUniqueId());
         if (arenaName == null) {
-            player.sendMessage("§cYou are not setting up an arena. Use /cs arena create <name>");
+            player.sendMessage("§cYou are not setting up an arena. Use /arena create <name>");
             return null;
         }
         return arenaSetup.get(arenaName);

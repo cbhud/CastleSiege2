@@ -40,41 +40,6 @@ public class ConfigManager {
         return config;
     }
 
-    public String getTitle() {
-        return config.getString("scoreboard-title");
-    }
-
-    public String getBottomline() {
-        return config.getString("scoreboard-bottomline");
-    }
-
-    public ChatColor getMainColor() {
-        return ChatColor.valueOf(config.getString("main-color").toUpperCase());
-    }
-
-    public ChatColor getTitleColor(){
-        return ChatColor.valueOf(config.getString("title-color").toUpperCase());
-    }
-
-    public ChatColor getBottomColor() {
-        return ChatColor.valueOf(config.getString("bottom-color").toUpperCase());
-    }
-
-    public ChatColor getSecondaryColor() {
-        return ChatColor.valueOf(config.getString("secondary-color").toUpperCase());
-    }
-
-    public int getAutoStartPlayers() {
-        return config.getInt("auto-start-players", 5);
-    }
-
-    public int getKc() {
-        return config.getInt("coins-on-kill", 1);
-    }
-    public int getWc() {
-        return config.getInt("coins-on-win", 3);
-    }
-
     public String getTeamName(Team team){
         if (team == Team.Attackers){
             return config.getString("attackersTeamName");
@@ -92,10 +57,6 @@ public class ConfigManager {
     }
 
 
-    public int getAutoStartCountdown() {
-        return config.getInt("auto-start-countdown", 60);
-    }
-
     public double getKingHealth() {
         return config.getDouble("king-health", 80.0);
     }
@@ -104,5 +65,11 @@ public class ConfigManager {
         return config.getString("king-name", "Charles");
     }
 
+    public int getCoinsOnKill(){
+        return config.getInt("coins-on-kill", 1);
+    }
+    public int getCoinsOnWin(){
+        return config.getInt("coins-on-win", 1);
+    }
 
 }

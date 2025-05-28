@@ -56,10 +56,6 @@ public class Arena {
         this.teamManager = new TeamManager(plugin, plugin.getConfigManager().getConfig());
         this.worldName = worldName;
         this.winner = -1;
-        Objects.requireNonNull(Bukkit.getWorld(worldName)).setAutoSave(false);
-        Bukkit.broadcastMessage("WORLD AUTO SAVE JE: "+ Objects.requireNonNull(Bukkit.getWorld(worldName)).isAutoSave());
-        Bukkit.broadcastMessage("WORLD AUTO SAVE JE: "+ Objects.requireNonNull(Bukkit.getWorld(worldName)).isAutoSave());
-        Bukkit.broadcastMessage("WORLD AUTO SAVE JE: "+ Objects.requireNonNull(Bukkit.getWorld(worldName)).isAutoSave());
     }
 
 
@@ -101,26 +97,35 @@ public class Arena {
 
     public boolean addPlayer(Player player) {
         if (state == ArenaState.ENDED){
-        player.sendMessage("§cThis arena is currently not available.");
-        return false;
+            for (String i:  plugin.getMsg().getMessage("arenaEnded", player)){
+                player.sendMessage(i);
+            }        return false;
         }
 
         if (players.size() >= getMax()) {
-            player.sendMessage("§cArena is full!");
+            for (String i:  plugin.getMsg().getMessage("arenaFull", player)){
+                player.sendMessage(i);
+            }
             return false;
         }
 
-        player.sendMessage("§aYou have joined the arena: " + getId());
+        for (String i:  plugin.getMsg().getMessage("arenaJoin", player)){
+            player.sendMessage(i);
+        }
 
         if(state == ArenaState.IN_GAME || !teamManager.tryRandomTeamJoin(player)) {
-            player.sendTitle("§8You are now spectating!", "§7Please wait until game concludes or /leave", 10, 70, 20);
+            player.sendTitle(plugin.getMsg().getMessage("spectatorTitle", player).get(0), plugin.getMsg().getMessage("spectatorTitle", player).get(1), 10, 70, 20);
             plugin.getPlayerManager().setPlayerAsSpectating(player);
             player.teleport(getKingSpawn());
             players.add(player);
             return true;
         }
+
         players.add(player);
-        player.teleport(getLobbySpawn());
+
+        if (lobbySpawn != null){
+            player.teleport(getLobbySpawn());
+        }
 
         if (players.size() >= getMin()) {
             startAutoStart(autoStart);
@@ -152,6 +157,12 @@ public class Arena {
         players.forEach(player -> {
             plugin.getMsg().getMessage("game-start-msg", player).forEach(player::sendMessage);
 
+            player.playSound(player.getLocation(),
+                    org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL,
+                    1.0f, // volume
+                    1.0f  // pitch
+            );
+
         });
         teleportTeamsToSpawns();
         startCountdown(countdown);
@@ -174,18 +185,30 @@ public class Arena {
             winner = 1;
 
             players.forEach(player -> {
+                player.playSound(player.getLocation(),
+                        org.bukkit.Sound.ENTITY_WITHER_SPAWN,
+                        1.0f, // volume
+                        1.0f  // pitch
+                );
                 plugin.getScoreboardManager().updateScoreboard(player, "end");
                 plugin.getMsg().getMessage("attackers-win-msg", player).forEach(player::sendMessage);
-                player.sendTitle(ChatColor.RED + plugin.getConfigManager().getAttacker(), "§ewon the game!", 10, 70, 20);
+                plugin.getDataManager().addPlayerCoins(player.getUniqueId(), plugin.getConfigManager().getCoinsOnWin());
+                player.sendTitle(plugin.getMsg().getMessage("attackersWinTitle", player).get(0), plugin.getMsg().getMessage("attackersWinTitle", player).get(1), 10, 70, 20);
 
             });
         } else {
             winner = 0;
             plugin.getMobManager().removeCustomZombie(this);
             players.forEach(player -> {
+                player.playSound(player.getLocation(),
+                        Sound.ENTITY_PLAYER_LEVELUP,
+                        1.0f, // volume
+                        1.0f  // pitch
+                );
                 plugin.getScoreboardManager().updateScoreboard(player, "end");
                 plugin.getMsg().getMessage("defenders-win-msg", player).forEach(player::sendMessage);
-                player.sendTitle(ChatColor.AQUA + plugin.getConfigManager().getDefender(), "§ewon the game!", 10, 70, 20);
+                plugin.getDataManager().addPlayerCoins(player.getUniqueId(), plugin.getConfigManager().getCoinsOnWin());
+                player.sendTitle(plugin.getMsg().getMessage("defendersWinTitle", player).get(0), plugin.getMsg().getMessage("defendersWinTitle", player).get(1), 10, 70, 20);
             });
         }
 
@@ -203,9 +226,6 @@ public class Arena {
                 teamManager.clearTeams();
 
 
-                // TODO: clear arena
-                // TODO: update stats
-                // TODO: game end handler
             });
         }, 10 * 20L);
 
@@ -228,7 +248,7 @@ public class Arena {
             String arenaPath = "arenas." + getId();
 
             if (!config.contains(arenaPath + ".minX")) {
-                Bukkit.broadcastMessage(ChatColor.RED + "Arena location not set! Use /arenasave first.");
+                Bukkit.broadcastMessage(ChatColor.RED + "Arena location is missing!");
                 return;
             }
 
@@ -252,7 +272,7 @@ public class Arena {
                 } catch (NoSchematicException e) {
                     throw new RuntimeException(e);
                 }
-                Bukkit.broadcastMessage(ChatColor.GREEN + "Arena " + getId() + " reset successfully!");
+                Bukkit.getLogger().info("Arena " + getId() + " reset successfully!");
                 state = ArenaState.WAITING;
                 winner = -1;
             });
@@ -267,7 +287,7 @@ public class Arena {
 
     private void clearArena(World world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, Runnable onComplete) {
         Bukkit.getScheduler().runTask(plugin, () -> {
-            int batchSize = 5000;
+            int batchSize = plugin.getConfigManager().getConfig().getInt("arenaBlockRegenPerSecond",2500);
             List<Block> blocks = new ArrayList<>();
 
             for (int x = minX; x <= maxX; x++) {
@@ -301,13 +321,12 @@ public class Arena {
         });
     }
 
-
-
-
-
-
+    public Location getLSpawn() {
+        return lobbySpawn;
+    }
 
     public Location getLobbySpawn() {
+        lobbySpawn = plugin.getArenaManager().getLocation(this);
         return lobbySpawn;
     }
 
@@ -345,6 +364,10 @@ public class Arena {
         return countdownTimer;
     }
 
+    public int getAutoStartTimer(){
+        return autoStartTimer;
+    }
+
     public void startAutoStart(int seconds) {
         if (autostartTaskId != -1) {
             return;
@@ -364,37 +387,37 @@ public class Arena {
                 players.forEach(player -> {
                     switch (autoStartTimer) {
                         case 60:
-                            player.sendMessage("Starting in 60 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 45:
-                            player.sendMessage("Starting in 45 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 30:
-                            player.sendMessage("Starting in 30 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 15:
-                            player.sendMessage("Starting in 15 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 10:
-                            player.sendMessage("Starting in 10 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 5:
-                            player.sendMessage("Starting in 5 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 4:
-                            player.sendMessage("Starting in 4 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 3:
-                            player.sendMessage("Starting in 3 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 2:
-                            player.sendMessage("Starting in 2 seconds!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         case 1:
-                            player.sendMessage("Starting in 1 second!");
+                            player.sendMessage(plugin.getMsg().getMessage("starting-in", player).get(0));
                             break;
                         default:
-                            break;  // Optional: just in case the value doesn't match any case
+                            break;
                     }
                 });
 
@@ -407,7 +430,6 @@ public class Arena {
         if (autostartTaskId != -1) {
             Bukkit.getScheduler().cancelTask(autostartTaskId);
             autostartTaskId = -1;
-            Bukkit.broadcastMessage("§cAuto-Start has been stopped!");
         }
     }
 
@@ -444,6 +466,12 @@ public class Arena {
                         plugin.getPlayerKitManager().setDefaultKit(player);
                     }
                     plugin.getPlayerKitManager().giveKit(player, plugin.getPlayerKitManager().getSelectedKit(player));
+                    if (team == Team.Defenders) {
+                        player.sendTitle(plugin.getMsg().getMessage("defendersTitle", player).get(0), plugin.getMsg().getMessage("defendersTitle", player).get(1), 10, 70, 20);
+                    } else {
+                        player.sendTitle(plugin.getMsg().getMessage("attackersTitle", player).get(0), plugin.getMsg().getMessage("attackersTitle", player).get(1), 10, 70, 20);
+                    }
+
                 }));
             }
         });

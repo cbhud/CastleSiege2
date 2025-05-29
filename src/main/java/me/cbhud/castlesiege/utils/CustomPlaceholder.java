@@ -52,7 +52,7 @@ public class CustomPlaceholder extends PlaceholderExpansion {
         // Custom placeholders
         switch (identifier.toLowerCase()) {
             case "timer":
-                return String.valueOf(getTimer(player)); // Example: %castlesiege_timer%
+                return String.valueOf(getTimer(player)); // Example: %cs_timer%
             case "starting-in":
                 return String.valueOf(getStartingIn(player)); // Example: %castlesiege_timer%
             case "kills":

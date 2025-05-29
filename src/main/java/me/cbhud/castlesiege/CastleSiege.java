@@ -37,7 +37,6 @@ public final class CastleSiege extends JavaPlugin {
     TeamSelector teamSelector;
 
     PlayerManager playerManager;
-    Regenerato regenerato;
     WorldEditPlugin worldEdit;
     KitManager kitManager;
     PlayerKitManager playerKitManager;
@@ -54,9 +53,8 @@ public final class CastleSiege extends JavaPlugin {
         configManager = new ConfigManager(this);
         msg = new Messages(this);
         arenaManager = new ArenaManager(this);
-        regenerato = (Regenerato) Bukkit.getPluginManager().getPlugin("Regenerato");
         worldEdit = (WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit");
-        if (regenerato == null || worldEdit == null) {
+        if (worldEdit == null) {
             getLogger().severe("Regenerato or FAWE plugin not found! Disabling plugin.");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -132,9 +130,6 @@ public final class CastleSiege extends JavaPlugin {
         return scoreboardManager;
     }
 
-    public Regenerato getRegenerato() {
-        return regenerato;
-    }
     public WorldEditPlugin getWorldEdit() {
         return worldEdit;
     }

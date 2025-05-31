@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import io.github.regenerato.worldedit.SchematicProcessor;
@@ -58,11 +59,6 @@ public class Arena {
         this.winner = -1;
     }
 
-
-    public Location getKingSpawn() {
-        return kingSpawn;
-    }
-
     public Location getAttackersSpawn() {
         return attackersSpawn;
     }
@@ -99,7 +95,8 @@ public class Arena {
         if (state == ArenaState.ENDED){
             for (String i:  plugin.getMsg().getMessage("arenaEnded", player)){
                 player.sendMessage(i);
-            }        return false;
+            }
+            return false;
         }
 
         if (players.size() >= getMax()) {
@@ -109,16 +106,24 @@ public class Arena {
             return false;
         }
 
-        for (String i:  plugin.getMsg().getMessage("arenaJoin", player)){
-            player.sendMessage(i);
-        }
-
-        if(state == ArenaState.IN_GAME || !teamManager.tryRandomTeamJoin(player)) {
+        if(state == ArenaState.IN_GAME) {
             player.sendTitle(plugin.getMsg().getMessage("spectatorTitle", player).get(0), plugin.getMsg().getMessage("spectatorTitle", player).get(1), 10, 70, 20);
-            plugin.getPlayerManager().setPlayerAsSpectating(player);
             player.teleport(getKingSpawn());
             players.add(player);
-            return true;
+            plugin.getPlayerManager().setPlayerAsSpectating(player);
+            return false;
+        }
+
+        if(!teamManager.tryRandomTeamJoin(player)){
+            player.teleport(getKingSpawn());
+            player.sendTitle(plugin.getMsg().getMessage("spectatorTitle", player).get(0), plugin.getMsg().getMessage("spectatorTitle", player).get(1), 10, 70, 20);
+            players.add(player);
+            plugin.getPlayerManager().setPlayerAsSpectating(player);
+            return false;
+        }
+
+        for (String i:  plugin.getMsg().getMessage("arenaJoin", player)){
+            player.sendMessage(i);
         }
 
         players.add(player);
@@ -153,16 +158,18 @@ public class Arena {
             Bukkit.broadcastMessage("You cannot start game in this state!");
         }
         state = ArenaState.IN_GAME;
-        plugin.getMobManager().spawnCustomMob(kingSpawn);
+        if (getKingSpawn() == null){
+            getKSpawn();
+        }
+        Bukkit.getWorld(worldName).setTime(14000);
+        plugin.getMobManager().spawnCustomMob(getKingSpawn());
         players.forEach(player -> {
-            plugin.getMsg().getMessage("game-start-msg", player).forEach(player::sendMessage);
-
             player.playSound(player.getLocation(),
-                    org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL,
+                    Sound.ENTITY_ENDER_DRAGON_GROWL,
                     1.0f, // volume
                     1.0f  // pitch
             );
-
+            plugin.getMsg().getMessage("game-start-msg", player).forEach(player::sendMessage);
         });
         teleportTeamsToSpawns();
         startCountdown(countdown);
@@ -199,6 +206,7 @@ public class Arena {
         } else {
             winner = 0;
             plugin.getMobManager().removeCustomZombie(this);
+            Bukkit.getWorld(worldName).setTime(1000);
             players.forEach(player -> {
                 player.playSound(player.getLocation(),
                         Sound.ENTITY_PLAYER_LEVELUP,
@@ -275,6 +283,7 @@ public class Arena {
                 Bukkit.getLogger().info("Arena " + getId() + " reset successfully!");
                 state = ArenaState.WAITING;
                 winner = -1;
+                Bukkit.getWorld(worldName).setTime(1000);
             });
 
 
@@ -323,6 +332,14 @@ public class Arena {
 
     public Location getLSpawn() {
         return lobbySpawn;
+    }
+
+    public Location getKingSpawn(){
+        return kingSpawn;
+    }
+    public Location getKSpawn() {
+        kingSpawn = plugin.getArenaManager().getMobLocation(this);
+        return kingSpawn;
     }
 
     public Location getLobbySpawn() {

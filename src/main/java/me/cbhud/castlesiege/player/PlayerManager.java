@@ -84,9 +84,12 @@ public class PlayerManager {
         plugin.getScoreboardManager().updateScoreboard(player, "pre-game");
     }
 
+
     public void setPlayerAsSpectating(Player player) {
-            player.setGameMode(GameMode.SPECTATOR);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
             playerStates.put(player, SPECTATOR);
+            player.setGameMode(GameMode.SPECTATOR);
+        }, 1L);
     }
 
 

@@ -15,6 +15,7 @@ pre-game:
     - ""
     - "&dArena: %cs_arena%"
     - "&ePlayers: %cs_arenasize%"
+    - "&aCoins: %cs_coins%"
     - "&aKit: %cs_kit%"
     - "&bTeam: %cs_team%"
     - ""

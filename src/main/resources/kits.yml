@@ -9,22 +9,19 @@ kits:
       - CROSSBOW
       - ARROW:32
       - CUSTOM_ITEM:stew
-      - CUSTOM_ITEM:stew
-      - CUSTOM_ITEM:stew
       - CHAINMAIL_HELMET
       - CHAINMAIL_CHESTPLATE
       - CHAINMAIL_LEGGINGS
       - CHAINMAIL_BOOTS
     price: 0
     team: Defenders
-    kitIcon: DIAMOND_SWORD
-
+    default: true
+    kitIcon: CROSSBOW
 
   Spearman:
     kitItems:
       - IRON_SWORD
       - CUSTOM_ITEM:spear
-      - CUSTOM_ITEM:stew
       - CUSTOM_ITEM:stew
       - CHAINMAIL_HELMET
       - IRON_CHESTPLATE
@@ -32,37 +29,35 @@ kits:
       - IRON_BOOTS
     price: 30
     team: Defenders
-    default: true
-    kitIcon: DIAMOND_SWORD
+    kitIcon: TRIDENT
 
   Wizard:
     kitItems:
-      - CUSTOM_ITEM:sword
+      - STONE_SWORD
       - CUSTOM_ITEM:support
       - CUSTOM_ITEM:attack
       - CUSTOM_ITEM:stew
-      - CUSTOM_ITEM:stew
-      - CUSTOM_ITEM:stew
-      - LEATHER_HELMET
-      - LEATHER_CHESTPLATE
+      - CHAINMAIL_HELMET
+      - CHAINMAIL_CHESTPLATE
       - LEATHER_LEGGINGS
       - LEATHER_BOOTS
     price: 45
     team: Defenders
-    kitIcon: DIAMOND_SWORD
+    kitIcon: HONEY_BOTTLE
 
 
   Knight:
     kitItems:
       - IRON_SWORD
+      - CUSTOM_ITEM:oathstone
       - CUSTOM_ITEM:stew
-      - IRON_HELMET
+      - CHAINMAIL_HELMET
       - IRON_CHESTPLATE
       - CHAINMAIL_LEGGINGS
       - IRON_BOOTS
     price: 90
     team: Defenders
-    kitIcon: DIAMOND_SWORD
+    kitIcon: SHIELD
 
   Skald:
     kitItems:
@@ -71,7 +66,6 @@ kits:
       - ARROW:32
       - CUSTOM_ITEM:sight
       - CUSTOM_ITEM:stew
-      - CUSTOM_ITEM:stew
       - LEATHER_HELMET
       - LEATHER_CHESTPLATE
       - LEATHER_LEGGINGS
@@ -79,21 +73,7 @@ kits:
     price: 0
     team: Attackers
     default: true
-    kitIcon: DIAMOND_SWORD
-
-  Berserker:
-    kitItems:
-      - IRON_AXE
-      - CUSTOM_ITEM:axe
-      - CUSTOM_ITEM:rage
-      - CUSTOM_ITEM:stew
-      - CHAINMAIL_HELMET
-      - CHAINMAIL_CHESTPLATE
-      - CHAINMAIL_LEGGINGS
-      - CHAINMAIL_BOOTS
-    price: 50
-    team: Attackers
-    kitIcon: DIAMOND_SWORD
+    kitIcon: BOW
 
   Bombardier:
     kitItems:
@@ -107,13 +87,27 @@ kits:
       - CHAINMAIL_BOOTS
     price: 40
     team: Attackers
-    kitIcon: DIAMOND_SWORD
+    kitIcon: TNT
+
+  Berserker:
+    kitItems:
+      - IRON_AXE
+      - CUSTOM_ITEM:axe
+      - CUSTOM_ITEM:rage
+      - CHAINMAIL_HELMET
+      - CHAINMAIL_CHESTPLATE
+      - CHAINMAIL_LEGGINGS
+      - CHAINMAIL_BOOTS
+    price: 65
+    team: Attackers
+    kitIcon: IRON_AXE
+
+
 
   Warrior:
     kitItems:
       - IRON_SWORD
       - CUSTOM_ITEM:ragnarok
-      - CUSTOM_ITEM:stew
       - CUSTOM_ITEM:stew
       - IRON_HELMET
       - CHAINMAIL_CHESTPLATE
@@ -121,4 +115,4 @@ kits:
       - CHAINMAIL_BOOTS
     price: 75
     team: Attackers
-    kitIcon: DIAMOND_SWORD
+    kitIcon: IRON_SWORD

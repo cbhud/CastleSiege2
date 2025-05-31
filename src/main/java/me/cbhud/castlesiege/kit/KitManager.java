@@ -49,19 +49,17 @@ public class KitManager {
             List<ItemStack> items = new ArrayList<>();
 
             for (String itemString : kitItems) {
-                String[] itemData = itemString.split(":");
-                Material material = Material.getMaterial(itemData[0].toUpperCase());
-
-                if (material == null) {
-                    String customItemName = itemData.length > 1 ? itemData[1] : itemData[0];
+                if (itemString.toUpperCase().startsWith("CUSTOM_ITEM:")) {
+                    String customItemName = itemString.substring("CUSTOM_ITEM:".length()).toLowerCase();
                     ItemStack customItem = createCustomItem(customItemName);
-
                     if (customItem != null && customItem.getType() != Material.AIR) {
                         items.add(customItem);
                     } else {
                         System.out.println("Failed to create custom item: " + customItemName);
                     }
                 } else {
+                    String[] itemData = itemString.split(":");
+                    Material material = Material.getMaterial(itemData[0].toUpperCase());
                     int amount = itemData.length > 1 ? Integer.parseInt(itemData[1]) : 1;
                     items.add(new ItemStack(material, amount));
                 }
@@ -74,35 +72,12 @@ public class KitManager {
     }
 
     private ItemStack createCustomItem(String customItemName) {
-        switch (customItemName.toLowerCase()) {
-            case "stew":
-                return new ItemStack(ItemManager.stew);
-            case "spear":
-                return new ItemStack(ItemManager.spear);
-            case "axe":
-                return new ItemStack(ItemManager.axe);
-
-            case "rage":
-                return new ItemStack(ItemManager.rage);
-
-            case "ragnarok":
-                return new ItemStack(ItemManager.ragnarok);
-
-            case "sight":
-                return new ItemStack(ItemManager.sight);
-
-            case "sword":
-                return new ItemStack(ItemManager.sword);
-
-            case "attack":
-                return new ItemStack(ItemManager.attack);
-
-            case "support":
-                return new ItemStack(ItemManager.support);
-
-            default:
-                return new ItemStack(Material.STONE);
+        CustomItem customItem = plugin.getItemManager().getById(customItemName.toLowerCase());
+        if (customItem != null) {
+            return customItem.getItemStack();
         }
+        // fallback to some default if no match
+        return new ItemStack(Material.STONE);
     }
 
     private void createKitsFileIfNotExists() {

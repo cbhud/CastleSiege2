@@ -1,52 +1,120 @@
 package me.cbhud.castlesiege.kit;
 
-import dev.triumphteam.gui.builder.item.ItemBuilder;
 import me.cbhud.castlesiege.CastleSiege;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import dev.triumphteam.gui.builder.item.ItemBuilder;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ItemManager {
 
     private final CastleSiege plugin;
-
-    public static ItemStack axe, stew, rage, ragnarok, sight, harm, sword, attack, support, spear;
+    private final Map<String, CustomItem> customItems = new HashMap<>();
 
     public ItemManager(CastleSiege plugin) {
         this.plugin = plugin;
-        initItems();
+        loadCustomItems();
     }
 
-    private void initItems() {
-        createItem("axe", Material.IRON_AXE, item -> axe = item);
-        createItem("spear", Material.TRIDENT, item -> {
-            item.addUnsafeEnchantment(Enchantment.LOYALTY, 1);
-            spear = item;
-        });
-        createItem("stew", Material.MUSHROOM_STEW, item -> stew = item);
-        createItem("rage", Material.NETHER_WART, item -> rage = item);
-        createItem("ragnarok", Material.MAGMA_CREAM, item -> ragnarok = item);
-        createItem("sight", Material.FERMENTED_SPIDER_EYE, item -> sight = item);
-        createItem("harm", Material.TIPPED_ARROW, item -> harm = item);
-        createItem("sword", Material.STONE_SWORD, item -> sword = item);
-        createItem("attack", Material.BLAZE_ROD, item -> attack = item);
-        createItem("support", Material.STICK, item -> support = item);
-    }
+    private void loadCustomItems() {
+        File file = new File(plugin.getDataFolder(), "custom_items.yml");
+        if (!file.exists()) plugin.saveResource("custom_items.yml", false);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-    private void createItem(String key, Material material, java.util.function.Consumer<ItemStack> consumer) {
-        String name = plugin.getMsg().getItemMessage("items." + key + ".name");
-        java.util.List<String> loreLines = plugin.getMsg().getItemMessages("items." + key + ".lore");
+        ConfigurationSection itemsSection = config.getConfigurationSection("items");
+        if (itemsSection == null) return;
 
-        ItemBuilder builder = ItemBuilder.from(material)
-                .name(Component.text(name))
-                .flags(ItemFlag.HIDE_ATTRIBUTES);
+        for (String key : itemsSection.getKeys(false)) {
+            ConfigurationSection section = itemsSection.getConfigurationSection(key);
+            if (section == null) continue;
 
-        for (String line : loreLines) {
-            builder.lore(Component.text(line));
+            Material material = Material.getMaterial(section.getString("material", "STONE"));
+            if (material == null) continue;
+
+            String name = ChatColor.translateAlternateColorCodes('&', section.getString("name", key));
+            List<String> rawLore = section.getStringList("lore");
+            List<String> lore = rawLore.stream()
+                    .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                    .collect(Collectors.toList());
+
+            long cooldown = section.getLong("cooldown", 0);
+            int amount = section.getInt("amount", 1);
+
+            ItemBuilder builder = ItemBuilder.from(material)
+                    .name(Component.text(name))
+                    .amount(amount)
+                    .flags(ItemFlag.HIDE_ATTRIBUTES);
+
+            for (String line : lore) {
+                builder.lore(Component.text(line));
+            }
+
+            // Parse potion effects
+            List<PotionEffect> effects = new ArrayList<>();
+            if (section.isList("effects")) {
+                for (Map<?, ?> map : section.getMapList("effects")) {
+                    try {
+                        String type = map.get("type").toString();
+                        int amplifier = Integer.parseInt(map.get("amplifier").toString());
+                        int duration = Integer.parseInt(map.get("duration").toString());
+
+                        PotionEffectType effectType = PotionEffectType.getByName(type.toUpperCase());
+                        if (effectType != null) {
+                            effects.add(new PotionEffect(effectType, duration, amplifier));
+                        }
+                    } catch (Exception e) {
+                        Bukkit.getLogger().warning("Invalid potion effect in item: " + key);
+                    }
+                }
+            }
+
+            // Parse enchantments
+            Map<Enchantment, Integer> enchantmentsMap = new HashMap<>();
+            if (section.isConfigurationSection("enchantments")) {
+                ConfigurationSection enchSection = section.getConfigurationSection("enchantments");
+                for (String enchKey : enchSection.getKeys(false)) {
+                    Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(enchKey.toLowerCase()));
+                    int level = enchSection.getInt(enchKey, 1);
+                    if (enchantment != null) {
+                        enchantmentsMap.put(enchantment, level);
+                        builder.enchant(enchantment, level); // Also apply enchantment visually to item
+                    }
+                }
+            }
+
+            CustomItem customItem = new CustomItem(key, builder.build(), effects, cooldown * 1000, enchantmentsMap);
+            customItems.put(key, customItem);
         }
+    }
 
-        consumer.accept(builder.build());
+
+
+
+    public Optional<CustomItem> matchCustomItem(ItemStack item) {
+        return customItems.values().stream()
+                .filter(ci -> ci.getItemStack().isSimilar(item))
+                .findFirst();
+    }
+
+    public Map<String, CustomItem> getCustomItems() {
+        return customItems;
+    }
+
+    public CustomItem getById(String id) {
+        return customItems.get(id);
     }
 }

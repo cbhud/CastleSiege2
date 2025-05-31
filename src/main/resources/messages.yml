@@ -54,6 +54,9 @@ selectedKit:
 lockedKit:
   - "&cYou do not have this kit unlocked. Right-click to purchase it."
 
+customitem-cooldown:
+  - "&cYou can use this item again in {seconds} seconds."
+
 selectTeamGui:
   - "&eSelect Team"
 
@@ -65,9 +68,6 @@ wizardAttackSpell:
 
 wizardSupportSpell:
   - "&aYou have cast a supportive spell, empowering your nearby allies!"
-
-wizardCooldown:
-  - "&cYou must wait {seconds} seconds before casting support again."
 
 alredayOwnKit:
   - "&aYou alreday own this kit!"

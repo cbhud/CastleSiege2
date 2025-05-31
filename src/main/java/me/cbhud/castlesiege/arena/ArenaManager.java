@@ -90,6 +90,30 @@ public class ArenaManager {
         return parseLocation(locationString);
     }
 
+    public Location getMobLocation(Arena arena) {
+        String id = arena.getId();
+        ConfigurationSection arenasSection = config.getConfigurationSection("arenas");
+
+        if (arenasSection == null) {
+            plugin.getLogger().warning("No 'arenas' section found in config!");
+            return null;
+        }
+
+        ConfigurationSection section = arenasSection.getConfigurationSection(id);
+        if (section == null) {
+            plugin.getLogger().warning("Arena with ID '" + id + "' not found in config.");
+            return null;
+        }
+
+        String locationString = section.getString("King-spawn");
+        if (locationString == null) {
+            plugin.getLogger().warning("King spawn not set for arena '" + id + "'.");
+            return null;
+        }
+
+        return parseLocation(locationString);
+    }
+
 
     private Location parseLocation(String locString) {
         if (locString == null || locString.isEmpty()) return null;

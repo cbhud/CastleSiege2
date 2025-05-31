@@ -2,6 +2,7 @@ package me.cbhud.castlesiege.utils;
 
 import me.cbhud.castlesiege.CastleSiege;
 import me.cbhud.castlesiege.arena.Arena;
+import me.cbhud.castlesiege.player.PlayerState;
 import me.cbhud.castlesiege.team.Team;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -36,6 +37,7 @@ public class MobManager implements Listener {
         }
 
         kingZombie = (Zombie) l.getWorld().spawnEntity(l, EntityType.ZOMBIE);
+
         kingZombie.setCustomNameVisible(true);
         kingZombie.setCustomName("§6§lKing " + kingName);
 
@@ -102,7 +104,10 @@ public class MobManager implements Listener {
 
         if (event.getDamager() instanceof Player && event.getEntity() instanceof Zombie) {
             Player damager = (Player) event.getDamager();
-            Team damagerTeam = plugin.getArenaManager().getArenaByPlayer(damager.getUniqueId()).getTeam(damager);
+            if (plugin.getPlayerManager().getPlayerState(damager.getPlayer()) != PlayerState.PLAYING){
+                return;
+            }
+                Team damagerTeam = plugin.getArenaManager().getArenaByPlayer(damager.getUniqueId()).getTeam(damager);
 
             // Cancel event only if the damager is a Defender and the damaged entity is a Zombie
             if (damagerTeam == Team.Defenders) {

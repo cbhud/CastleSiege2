@@ -12,6 +12,7 @@ import me.cbhud.castlesiege.gui.ArenaSelector;
 import me.cbhud.castlesiege.gui.KitSelector;
 import me.cbhud.castlesiege.gui.TeamSelector;
 import me.cbhud.castlesiege.kit.ItemManager;
+import me.cbhud.castlesiege.kit.KillEffectManager;
 import me.cbhud.castlesiege.kit.KitManager;
 import me.cbhud.castlesiege.kit.PlayerKitManager;
 import me.cbhud.castlesiege.player.PlayerManager;
@@ -43,6 +44,7 @@ public final class CastleSiege extends JavaPlugin {
     KitSelector kitSelector;
     ItemManager itemManager;
     DataManager dataManager;
+    KillEffectManager killEffectManager;
 
     @Override
     public void onEnable() {
@@ -81,6 +83,7 @@ public final class CastleSiege extends JavaPlugin {
         kitManager = new KitManager(this);
         playerKitManager = new PlayerKitManager(this);
         kitSelector = new KitSelector(this);
+        killEffectManager = new KillEffectManager(this);
         getCommand("coins").setExecutor(new CoinsCommand(this));
         getServer().getPluginManager().registerEvents(new TNTThrower(this), this);
     }
@@ -139,6 +142,14 @@ public final class CastleSiege extends JavaPlugin {
     }
     public KitSelector getKitSelector() {
         return kitSelector;
+    }
+
+    public ItemManager getItemManager() {
+        return itemManager;
+    }
+
+    public KillEffectManager getKillEffectManager(){
+        return killEffectManager;
     }
 
     public DataManager getDataManager() {
